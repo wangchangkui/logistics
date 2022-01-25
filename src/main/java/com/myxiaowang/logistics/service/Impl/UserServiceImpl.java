@@ -1,0 +1,201 @@
+package com.myxiaowang.logistics.service.Impl;
+
+import cn.hutool.core.util.IdUtil;
+import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.myxiaowang.logistics.config.PropertiesConfig;
+import com.myxiaowang.logistics.dao.AddressMapper;
+import com.myxiaowang.logistics.dao.UserMapper;
+import com.myxiaowang.logistics.pojo.Address;
+import com.myxiaowang.logistics.pojo.User;
+import com.myxiaowang.logistics.service.UserService;
+import com.myxiaowang.logistics.util.FileUtils;
+import com.myxiaowang.logistics.util.OSS.OSSClient;
+import com.myxiaowang.logistics.util.RedisUtil.RedisPool;
+import com.myxiaowang.logistics.util.Reslut.ResponseResult;
+import com.myxiaowang.logistics.util.Reslut.ResultInfo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.params.SetParams;
+
+import java.io.File;
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * @author wck
+ * @version 1.0.0
+ * @Description TODO
+ * @createTime 2022年01月18日 16:41:00
+ */
+@Service
+public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+    @Autowired
+    private OSSClient.OSSBuilder ossBuilder;
+
+    @Autowired
+    private RedisPool redisPool;
+
+    @Autowired
+    private UserMapper userMapper;
+
+    @Autowired
+    private AddressMapper addressMapper;
+
+
+    @Autowired
+    private PropertiesConfig config;
+    
+    @Value("${filePath.path}")
+    private String filePath;
+    @Value("${filePath.osspath}")
+    private String ossPath;
+
+
+    @Override
+    public ResponseResult<Address> getAddressById(String id) {
+        return ResponseResult.success(addressMapper.selectById(id));
+    }
+
+    @Override
+    public ResponseResult<String> addAddress(Address address) {
+        // 如果是设置默认值，需要把其他设置了默认值的数据给干掉
+        if(address.getIsCheck()==1){
+            Address temp = new Address();
+            temp.setIsCheck(0);
+            addressMapper.update(temp,new QueryWrapper<Address>().eq("userId",address.getUserId()));
+        }
+        if(Objects.isNull(address.getId())){
+            addressMapper.insert(address);
+        }else{
+            addressMapper.updateById(address);
+        }
+
+        return ResponseResult.success("插入成功");
+    }
+
+    @Override
+    public ResponseResult<String> setCheck(String id,String userId) {
+        Address address = new Address();
+        address.setIsCheck(0);
+        addressMapper.update(address,new QueryWrapper<Address>().eq("userId",userId));
+        address.setIsCheck(1);
+        addressMapper.update(address,new QueryWrapper<Address>().eq("id",id));
+        return ResponseResult.success("更新默认值成功");
+    }
+
+    @Override
+    public ResponseResult<String> deleteUserAddress(String id) {
+        addressMapper.deleteById(id);
+        return ResponseResult.success(ResultInfo.SUCCESS.getMessage());
+    }
+
+    @Override
+    public ResponseResult<List<Address>> getUserAddressList(String userId) {
+        List<Address> userId1 = addressMapper.selectList(new QueryWrapper<Address>().eq("userId", userId));
+        return ResponseResult.success(userId1);
+    }
+
+    @Override
+    public ResponseResult<String> updateUser(User user) {
+        userMapper.updateById(user);
+        return ResponseResult.success(ResultInfo.SUCCESS.getMessage());
+    }
+
+    @Override
+    public ResponseResult<String> uploadHeader(String userid,MultipartFile file) {
+        System.out.println(userid);
+        // 上传图片文件
+        File transFile = FileUtils.multipartFileTransFileOnFix(file, filePath+"/");
+        OSSClient.OSSBuilder ossBuilder = this.ossBuilder.setEND_POINT(config.getEND_POINT())
+                .setACCESS_KEY_ID(config.getACCESS_KEY_ID())
+                .setACCESS_KEY_SECRET(config.getACCESS_KEY_SECRET());
+        OSSClient ossClient = ossBuilder.buidOSS(ossBuilder);
+        // 在更新前删除用户原来的头像
+        ossClient.deleteFile("myxiaowang",userid+".png");
+        // 上传图片
+        ossClient.uploadFile("myxiaowang", userid+".png",transFile);
+        return ResponseResult.success(ossPath+userid+".png");
+    }
+
+    @Override
+    public ResponseResult<User> checkSms(String phone, String sms) {
+        User user=getOne(new QueryWrapper<User>().eq("phone", phone));
+        if(Objects.isNull(user)){
+            return ResponseResult.error(ResultInfo.NO_RESULT);
+        }
+        try(Jedis jedis=redisPool.getConnection()){
+            String yzm = jedis.get(user.getId().toString());
+            if(Objects.isNull(yzm) ){
+                return ResponseResult.error(ResultInfo.NO_RESULT);
+            }
+            if(!Objects.equals(yzm,sms)){
+                return ResponseResult.error(ResultInfo.NO_RESULT);
+            }
+            // 删除验证
+            jedis.del(user.getId().toString());
+        }
+        return ResponseResult.success(user);
+    }
+
+    @Override
+    public ResponseResult<User> getUser(String openId) {
+        User loginUser=null;
+        try (Jedis jedis=redisPool.getConnection();){
+            String user = jedis.get("openid");
+            // redis 不存在的情况下
+            if(Objects.isNull(user)){
+                loginUser = userMapper.getUser(openId);
+                // 数据库不存在的情况下
+                if(Objects.isNull(loginUser)){
+                    return ResponseResult.error(ResultInfo.NO_RESULT);
+                }
+                // 设置redis参数
+                SetParams setParams=new SetParams();
+                setParams.nx().ex(86400);
+                jedis.set(openId, JSON.toJSONString(loginUser),setParams);
+            }
+            JSON.parseObject(user,User.class);
+        }
+        return ResponseResult.success(loginUser);
+    }
+
+    @Override
+    public ResponseResult<String> signUser(User user) {
+        user.setPassword(IdUtil.fastSimpleUUID());
+        user.setPhone("");
+        int insert = userMapper.insert(user);
+        return ResponseResult.success(""+insert);
+    }
+
+    @Override
+    public ResponseResult<Address> getUserAddress(String openId) {
+        Address address = addressMapper.selectOne(new QueryWrapper<Address>().eq("userid", openId).and(z -> {
+            z.eq("isCheck", 1);
+        }));
+        return ResponseResult.success(address);
+    }
+
+    @Override
+    public ResponseResult<ResultInfo> sendSms(String phone) {
+        // 先去查询一下手机号
+        User phoneIs = getOne(new QueryWrapper<User>().eq("phone", phone));
+        if(Objects.isNull(phoneIs)){
+            return ResponseResult.error(ResultInfo.NO_RESULT);
+        }
+        // 设置redis参数
+        SetParams setParams=new SetParams();
+        // 60秒过期
+        setParams.nx().ex(60);
+        try(Jedis jedis=redisPool.getConnection()){
+            // 线上环境 请改为正常地发送验证码
+            jedis.set(phoneIs.getId().toString(),"1234");
+        }
+       return ResponseResult.success(ResultInfo.SUCCESS);
+    }
+
+}

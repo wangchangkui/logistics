@@ -1,0 +1,79 @@
+server:
+  port: 8080
+
+spring:
+  #  事务的配置
+  aop:
+    proxy-target-class: true
+  #    数据库配置
+  datasource:
+    url: jdbc:mysql://localhost:3306/logistics
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+
+  # json配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      write-dates-as-timestamps: false
+  servlet:
+    multipart:
+      max-file-size: 1024MB
+
+  #  redis配置
+  redis:
+    port: 6379
+    host: 127.0.0.1
+    database: 0
+  output:
+    ansi:
+      enabled: always
+  #rabbitmq配置
+  rabbitmq:
+    host: 101.37.253.142
+    port: 5672
+    username: admin
+    password: admin
+    listener:
+      simple:
+        concurrency: 10
+        max-concurrency: 20
+      direct:
+        prefetch: 5
+    virtual-host: my_vhost
+#mybatis配置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    auto-mapping-behavior: full
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    jdbc-type-for-null: varchar
+  global-config:
+    db-config:
+      logic-not-delete-value: 1
+      logic-delete-value: 0
+  mapper-locations: classpath*:mapper/**/*Mapper.xml
+#  日志配置
+logging:
+  config: classpath:loggin.xml
+
+
+# 文件上传的地址
+filePath:
+  path: D:\ziptest
+  osspath: "https://myxiaowang.oss-cn-beijing.aliyuncs.com/"
+#阿里云配置
+aliyun:
+  #OSS的配置
+  END_POINT: oss-cn-beijing.aliyuncs.com
+  ACCESS_KEY_ID: LTAI5t9bNc6WbJ5v7APDaZTq
+  ACCESS_KEY_SECRET: QPXu39xAdcdBmeCfmxhTSc3nVM7CBY
+
+
+  # 支付宝的配置
+  PUBLIC_KEY: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3DbeQxPcTQ+6MbGMz0P220VtYNWgQqv0RQqFNAGecO8Y7zzJ8Ab2C4hJs41at21JAoObowgXMQU6Pl2vpN0/Ly+U+1ylk1KmSDsrkbXdzdrC7Aoxq8rO9+DhLwhFItnta1UO4EMGw+fNDFFS0RC5mKCRRnw25NumkJ4Uk8SDkLS2GaJdoF53CXvuyIVC7LmGuWTmvFgVd0xZ/5uVVfrCv7pOUuRH6JqCtU3mOM61HO1aX3Q1jH8X5Ev/qV75cSQDaiFJvfg/c6aIO1cQNdUrMLbY/X0O9amQw23vViJYzohUU2LUDlXyo7GQ5+ZddWU6BiApkhOfq38/RnhcekEJRQIDAQAB
+  MER_PRIVATE_KEY: MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCaWFKFwbXh5U+gUpVbRJ/xHjUcb34HeReVq3ZpuIlEfuVTphapWWnL0qsAOde0WTmN1YRnikEL43U5cDHY3/7H4lwaeeRkshHJC/wkNuDuACeKr9vaZk88sSXf7Xg4d+1C6NOLmWIvahFyuDK4vJEVkydMZvuuO1uWfcFB2UV/J+gb5/f2AajLUrVCMu0ex4xJk8vxZ8Xi0EZyx2xjcX9m6l3xP4QRh+slKl9gBO1gjj+jsczzUNvldx7XWVXBuLeqvvu3mEym6HPSIxUzqEjYuORK2kqZeeYMV2Iper7izXG+LEEmfCcCx0sjsW2swgcYumTpeYZp2UpMwsvmSsMfAgMBAAECggEAZxsBZaEV46XQH4WLiMC7J9PKHwjL5CoceztjixRffoZWpB6bnN3CMwq0eR4q3quMKxerr49IDK0SLiCo6/wWs2ifpoAu9qWOBAQhl/+hGty3jYoVEDywShb8+i4k1XQn5z6psuPwF0SAC2bJW2d8dDEtW3igQLAeatXvOBHwvxPcAku2xs1fEu8MIftYCb5A4v6mbRQI5TYgpmAvGHAeyl1gEVcKOZuor6DgFnVT3nb2EZ4Ei2Zr8BrkagTxd0d+VuNGGxqq6ccv+Lfg7zmHF66c7D2pHAR/wrzOLW0Jt/mMMBjI8XisLxg+kkKJjUdPPi4SmDWvy/sTGW9Ee085wQKBgQDHL4EIedoVbCapHHX6EaOT0xu2FuO4LAb3OQb7+Bu8hISdSNNxUZT8SvqiFOdXWyuYlsmMClq9WLKpJMLk1nCVXzpGf3/COZOcvDhnxcgxQhMNHW3cbaSFrKnDD0qb6Nbz8G4k9RQw1bJhi/7JoY3eZ5hxvDAiM7/rTtOuBD43RwKBgQDGXpGXjGjYZJYIElPlAtvqPAtcoeACnrlexttUIzSxWdj6sfhp8VZBbAkN9+MHLnbnpjne8hzhQQ/XdgwYG299RFQNMnpSOBWPlXwg0NKbK/UgxJ9pdchBkvHv+ILw6qWb5YYz5Z010h3iZbUlA/inDsD4xu6LwOZpC+hAmgKxaQKBgQCm2Pr8D54HjdWAmO+WLopYPGEdEWVlE7QuCJ36GKWbL2IqoiND6/Ohtmjlth7nBN6q7bwcS1wg+ZiGqN18dMhPxzn4bbqmBjbI9r1E596+rDtrI/ivyUQkGTMGyttTaCIOqpqI6KYmFgtbPLqLSYGeCCchNmMXc0PTJu+X98Pp5wKBgAuSUq3je+47l+DqqMgwLYHxdLw3mSit96RGt16mGxnJYvXk0dfkQyLX2YNeFXlCxZ7nvHJ77yFYuULZWQVC/HLzPG/0pNwM930DvFTxuYdhvg/mSGJPg5oHp2NXPNQu6/A3KGf4mf4cvq+JPVLmc2fTXYBlol62pvozvp2eHlAZAoGAWI7kB1LQ/AqWd5J+liWOquwLzE77hlJ5RXRX4iAg/vGxLvnsfcfP9ewcYSAeeYNOPW/i0hGPZPUbsQrJytOlNRJ8zRn0JfcqEtOTrHdlJvwllboGA6v8Cbtqto7eTLtwGD3ncAzHjwn64KLmvTwiMZLULkRcPgzyGzzFpiDhjqc=
+  APP_ID: 2021001157616855
