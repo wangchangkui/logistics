@@ -11,4 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class OrderAop {
 
+    public void preOrder(){
+        System.out.println("在创建订单之前");
+    }
 }
