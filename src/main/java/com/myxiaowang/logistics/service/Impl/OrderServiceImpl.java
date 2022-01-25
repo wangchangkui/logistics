@@ -83,7 +83,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             BigDecimal bigDecimal2=user2.getDecimals();
             Integer version=user.getVersion();
             Integer version2 = user2.getVersion();
-
             // 需要修改的值
             user.setDecimals(bigDecimal.add(order.getMoney()));
             user.setVersion(version+1);
