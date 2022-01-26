@@ -17,7 +17,7 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName("order")
+@TableName("orders")
 public class Order {
     @TableId(value = "id",type = IdType.AUTO)
     private Integer id;
@@ -25,9 +25,9 @@ public class Order {
     private String userId;
     @TableField(value = "goodsName")
     private String goodsName;
-    @TableField(value = "create_time")
+    @TableField(value = "create_time",fill = FieldFill.INSERT)
     private Date creationTime;
-    @TableField(value = "status",fill = FieldFill.INSERT)
+    @TableField(value = "status")
     private Integer status;
     @TableField(value = "money")
     private BigDecimal money;

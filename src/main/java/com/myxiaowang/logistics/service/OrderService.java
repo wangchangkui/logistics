@@ -1,5 +1,6 @@
 package com.myxiaowang.logistics.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.myxiaowang.logistics.pojo.Order;
 import com.myxiaowang.logistics.util.Reslut.ResponseResult;
@@ -14,10 +15,18 @@ public interface OrderService extends IService<Order> {
 
 
     /**
+     * 分页获取订单数据
+     * @param page 值
+     * @param size 大小
+     * @return 分页数据
+     */
+    ResponseResult<IPage<Order>> getOrderList(int page, int size);
+
+    /**
      * 用户确认数据
      * @param userId 确认的用户id
      * @param orderId 订单id
-     * @return
+     * @return 提交结果
      */
     ResponseResult<String> confirmOrder(String userId,String orderId);
 
