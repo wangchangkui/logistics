@@ -5,6 +5,7 @@
 .mvn
 target
 
+*.yml
 # Log file
 *.log
 
