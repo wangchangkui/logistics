@@ -5,7 +5,7 @@
     <contextName>logback</contextName>
 
     <logger name="com.myxiaowang" level="debug"/>
-    <property name="path" value="D:\JavaProject\ModuleTest2\Web\log"></property>
+    <property name="path" value="D:\JavaProject\logistics"></property>
     <property name="maxHistory" value="30"/>
     <property name="maxFileSize" value="50MB"/>
 

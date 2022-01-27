@@ -20,6 +20,8 @@ public class RedisPool {
 
     @Value("${spring.redis.host}")
     public String host;
+    @Value("${spring.redis.port}")
+    private Integer port;
 
     private volatile JedisPool jdb;
 
@@ -28,7 +30,7 @@ public class RedisPool {
         JedisPoolConfig  poolConfig=new JedisPoolConfig();
         poolConfig.setMaxIdle(10);
         poolConfig.setMaxTotal(50);
-        jdb = new JedisPool(poolConfig, host );
+        jdb = new JedisPool(poolConfig, host ,port);
     }
 
     /**
