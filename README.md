@@ -6,7 +6,7 @@
 >后端： springboot+Mybatis-plus+redis+docker  \
 > 前端： vue
 
-##作者
+作者
 >Myxiaowang \
 > Sjd
 > 
@@ -14,9 +14,17 @@
 >联系方式：
 >   QQ:1049835177
 
-##快速开始
+快速开始
 > 1.部署数据库 \
 > 2.安装redis  
 > 3.装docker \
 > 4.配置环境 
 
+详细说明：
+> ##docker安装mysql 并且本地挂载卷：
+> docker run --name mysqls -d -it -p 7896:3306 -e MYSQL_ROOT_PASSWORD=root -v /root/mysqldata:/var/lib/mysql  mysql:5.7 \
+> 安全组开放7896端口
+
+>docker 安装一个redis \
+> docker run -it -p 6565:6379 --name redis redis:latest \
+> 安全组开放端口6565
