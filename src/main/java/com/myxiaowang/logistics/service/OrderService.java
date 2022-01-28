@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.myxiaowang.logistics.pojo.Order;
 import com.myxiaowang.logistics.util.Reslut.ResponseResult;
+import java.util.*;
 
 /**
  * @author wck
@@ -12,6 +13,14 @@ import com.myxiaowang.logistics.util.Reslut.ResponseResult;
  * @createTime 2022年01月20日 17:07:00
  */
 public interface OrderService extends IService<Order> {
+
+    /**
+     * 根据条件分类获取
+     * @param v1 订单类型
+     * @param con 条件
+     * @return 集合
+     */
+    ResponseResult<List<Order>> getOrdersByCond(int v1,String con);
 
 
     /**
@@ -46,7 +55,7 @@ public interface OrderService extends IService<Order> {
 
 
     /**
-     * 用于取消订单
+     * 用于取消订单 这个接口是用于给下单的用户取消的，不是给抢单的用户取消的
      * @param userId 用户id
      * @param orderId 订单id
      * @return 返回值

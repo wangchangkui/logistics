@@ -100,7 +100,7 @@ public class ConfirmOrderAop {
                 logistics.setUserId(args[0].toString());
                 logistics.setGoods(order.getGoodsName());
                 logistics.setMoney(order.getMoney());
-                logistics.setCreateTime(order.getCreationTime());
+                logistics.setCreateTime(order.getCreateTime());
                 logistics.setGetUser(order.getUserId());
                 logisticsMapper.insert(logistics);
                 // 最后删除redis的订单数据

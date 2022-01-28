@@ -78,6 +78,7 @@ public class OrderAspect {
         }catch (Exception e){
             log.error(e.getMessage());
         }
+        // 最后通知用户 订单被接手了 消息框内 发送消息
     }
 
     /**

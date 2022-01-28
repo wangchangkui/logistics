@@ -2,15 +2,11 @@ package com.myxiaowang.logistics.service.Impl;
 
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.myxiaowang.logistics.dao.ArrearsMapper;
-import com.myxiaowang.logistics.dao.LogisticsMapper;
-import com.myxiaowang.logistics.dao.OrderMapper;
-import com.myxiaowang.logistics.dao.UserMapper;
+import com.myxiaowang.logistics.dao.*;
 import com.myxiaowang.logistics.pojo.*;
 import com.myxiaowang.logistics.service.OrderService;
 import com.myxiaowang.logistics.util.Annotation.MyAop;
@@ -24,14 +20,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.params.SetParams;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
+
+import static com.myxiaowang.logistics.util.Enum.OrderByEnum.*;
 
 
 /**
@@ -44,9 +42,9 @@ import java.util.Objects;
 public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements OrderService {
     Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
 
+
     @Autowired
     private RedisPool redisPool;
-
     @Autowired
     private LogisticsMapper logisticsMapper;
     @Autowired
@@ -55,7 +53,68 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     private UserMapper userMapper;
     @Autowired
     private ArrearsMapper arrearsMapper;
+    @Autowired
+    private TakePatsMapper takePatsMapper;
 
+    @Override
+    public ResponseResult<List<Order>> getOrdersByCond(int v1, String con) {
+        switch (v1){
+            case 0:
+                if(A.getCode().equals(con)){
+                  return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1)));
+                }
+                if(B.getCode().equals(con)){
+                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).orderByDesc("create_time")));
+                }
+                if(C.getCode().equals(con)){
+                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).orderByAsc("money")));
+                }
+                if(D.getCode().equals(con)){
+                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).orderByAsc("create_time")));
+                }
+                if(E.getCode().equals(con)){
+                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).orderByDesc("money")));
+                }
+                break;
+            case 1:
+                if(A.getCode().equals(con)){
+                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).eq("goodsName","取快递")));
+                }
+                if(B.getCode().equals(con)){
+                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).eq("goodsName","取快递").orderByDesc("create_time")));
+                }
+                if(C.getCode().equals(con)){
+                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).eq("goodsName","取快递").orderByAsc("money")));
+                }
+                if(D.getCode().equals(con)){
+                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).eq("goodsName","取快递").orderByAsc("create_time")));
+                }
+                if(E.getCode().equals(con)){
+                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).eq("goodsName","取快递").orderByDesc("money")));
+                }
+                break;
+            case 2:
+                if(A.getCode().equals(con)){
+                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).eq("goodsName","打印")));
+                }
+                if(B.getCode().equals(con)){
+                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).eq("goodsName","打印").orderByDesc("create_time")));
+                }
+                if(C.getCode().equals(con)){
+                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).eq("goodsName","打印").orderByAsc("money")));
+                }
+                if(D.getCode().equals(con)){
+                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).eq("goodsName","打印").orderByAsc("create_time")));
+                }
+                if(E.getCode().equals(con)){
+                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).eq("goodsName","打印").orderByDesc("money")));
+                }
+                break;
+            default:
+                return null;
+        }
+        return null;
+    }
 
     @Override
     public ResponseResult<IPage<Order>> getOrderList(int page, int size) {
@@ -69,12 +128,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     public ResponseResult<String> confirmOrder(String userId, String orderId) {
         Order order;
         // 由于Aop的原因 只要订单存在，则一定在redis内
-        try(Jedis jedis=redisPool.getConnection()){
+        try (Jedis jedis = redisPool.getConnection()) {
             String s = jedis.get(orderId);
-            if(Objects.isNull(s)){
+            if (Objects.isNull(s)) {
                 ResponseResult.error(ResultInfo.NO_RESULT);
             }
-            order=JSON.parseObject(s,Order.class);
+            order = JSON.parseObject(s, Order.class);
         }
         if (Objects.isNull(order)) {
             ResponseResult.error(ResultInfo.NO_RESULT);
@@ -100,7 +159,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         if (update1 < 1 || update2 < 1) {
             throw new RuntimeException("数据不正确");
         }
-
         return ResponseResult.success(ResultInfo.SUCCESS.getMessage());
     }
 
@@ -143,27 +201,49 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     public ResponseResult<String> createOrder(Order order) {
         // 在创建订单之前，我们需要先判断该用户是否有未缴费的订单记录
         Integer userCount = arrearsMapper.selectCount(new QueryWrapper<Arrears>().eq("userid", order.getUserId()));
-        if (userCount>1) {
+        if (userCount > 1) {
             ResultInfo.NO_RESULT.setMessage("该用户存在未缴费的订单");
             return ResponseResult.error(ResultInfo.NO_RESULT);
         }
-        order.setOrderId(IdUtil.objectId());
-        order.setStatus(1);
-        if (save(order)) {
-            // 往redis内存入数据
-            try (Jedis jedis = redisPool.getConnection()) {
+        // 需要保证一个用户只能有一个取货码
+        try (Jedis jedis = redisPool.getConnection()) {
+            String s1 = jedis.get(order.getCode());
+            if(Objects.isNull(s1)){
+                Integer takeCount = takePatsMapper.selectCount(new QueryWrapper<TakeParts>().eq("code", order.getCode()).eq("userid", order.getUserId()));
+                if (takeCount > 1) {
+                    ResultInfo.NO_RESULT.setMessage("取件码存在，请查看我的订单");
+                    return ResponseResult.error(ResultInfo.NO_RESULT);
+                }
+            }else {
+                    ResultInfo.NO_RESULT.setMessage("取件码存在，请查看我的订单");
+                    return ResponseResult.error(ResultInfo.NO_RESULT);
+            }
+            String orderid = IdUtil.objectId();
+            order.setOrderId(orderid);
+            order.setStatus(1);
+            if (save(order)) {
+                // 防止重复提交 保存取货码
+                TakeParts takeParts = new TakeParts();
+                takeParts.setOrderid(orderid);
+                takeParts.setGoodsName(order.getGoodsName());
+                takeParts.setCode(order.getCode());
+                takeParts.setUserid(order.getUserId());
+                // 往redis内存入数据
                 String s = JSON.toJSONString(order);
                 SetParams setParams = new SetParams();
                 setParams.ex(86000);
                 jedis.set(order.getOrderId(), s, setParams);
+                jedis.set(order.getCode(), JSON.toJSONString(takeParts));
+                takePatsMapper.insert(takeParts);
+                return ResponseResult.success("生成订单成功");
             }
-            return ResponseResult.success("生成订单成功");
         }
         logger.error(JSON.toJSONString(order));
         return ResponseResult.success("失败");
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ResponseResult<String> cancelOrder(String userId, String orderId) {
         Order order = getOne(new QueryWrapper<Order>().eq("userid", userId).eq("orderid", orderId));
         if (Objects.isNull(order)) {
@@ -173,6 +253,11 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         if (Stutas.hasStutasWithWait(order.getStatus())) {
             order.setStatus(Stutas.CANCEL.getId());
             order.setOverTime(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
+            // 删除取件码
+            try(Jedis jedis=redisPool.getConnection()){
+                jedis.del(order.getCode());
+                takePatsMapper.delete(new QueryWrapper<TakeParts>().eq("code", order.getCode()).eq("userid", userId).eq("orderid", orderId));
+            }
             return ResponseResult.success("订单取消成功");
         }
         return ResponseResult.error(400, "订单已经" + Stutas.getStatus(order.getStatus()));

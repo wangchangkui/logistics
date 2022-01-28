@@ -37,4 +37,6 @@ public class Logistics {
     private String getUser;
     @TableField(value = "status")
     private Integer status;
+    @TableField(value = "code")
+    private String code;
 }

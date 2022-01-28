@@ -26,7 +26,7 @@ public class Order {
     @TableField(value = "goodsName")
     private String goodsName;
     @TableField(value = "create_time",fill = FieldFill.INSERT)
-    private Date creationTime;
+    private Date createTime;
     @TableField(value = "status")
     private Integer status;
     @TableField(value = "money")
@@ -41,4 +41,8 @@ public class Order {
     private String address;
     @TableField(value = "over_time")
     private Date overTime;
+    @TableField(value = "code")
+    private String code;
+    @TableField(value = "username")
+    private String userName;
 }

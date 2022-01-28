@@ -7,6 +7,8 @@ import com.myxiaowang.logistics.util.Reslut.ResponseResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * @author wck
  * @version 1.0.0
@@ -18,6 +20,12 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
     @Autowired
     private OrderService orderService;
+
+
+    @PostMapping("/condition")
+    public ResponseResult<List<Order>> getOrderByCond(@RequestParam("v1") int v1, @RequestParam("v2") String v2){
+        return orderService.getOrdersByCond(v1,v2);
+    }
 
 
     @PostMapping("/confirm")
