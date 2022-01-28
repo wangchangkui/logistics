@@ -4,8 +4,9 @@
 
 # 开发套件
 > 更多后期完成后补充 \
->后端： springboot+Mybatis-plus+redis+docker  \
-> 前端： vue
+> 后端： springboot+Mybatis-plus+redis+docker  \
+> 前端： vue 微信小程序
+
 
 作者
 >Myxiaowang \
