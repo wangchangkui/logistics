@@ -2,6 +2,7 @@ package com.myxiaowang.logistics.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.myxiaowang.logistics.pojo.Logistics;
+import io.lettuce.core.dynamic.annotation.Param;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -21,5 +22,5 @@ public interface LogisticsMapper extends BaseMapper<Logistics> {
      * @param type 类型
      * @return 订单即集合
      */
-    List<Logistics> getUserLogistics(String userId,int type);
+    List<Logistics> getUserLogistics(@Param("userid")String userId,@Param("type") int type);
 }

@@ -71,6 +71,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     @Override
     public ResponseResult<List<Logistics>> getOrderByUser(String userId, int type) {
+        System.out.println(userId+"|"+type);
         return ResponseResult.success(logisticsMapper.getUserLogistics(userId,type));
     }
 
