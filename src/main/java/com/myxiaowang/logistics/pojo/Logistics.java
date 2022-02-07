@@ -39,4 +39,6 @@ public class Logistics {
     private Integer status;
     @TableField(value = "code")
     private String code;
+    @TableField(exist = false)
+    private Order order;
 }

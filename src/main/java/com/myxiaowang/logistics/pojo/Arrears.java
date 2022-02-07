@@ -33,4 +33,6 @@ public class Arrears {
     private String username;
     @TableField(value = "create_time",fill = FieldFill.INSERT)
     private Date createTime;
+    @TableField(value = "arruserid")
+    private String arrUserid;
 }

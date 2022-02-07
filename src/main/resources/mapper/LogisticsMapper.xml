@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.myxiaowang.logistics.dao.LogisticsMapper">
+    <select id="getUserLogistics" resultType="com.myxiaowang.logistics.pojo.Logistics">
+        select from logistics as l1 left join orders as l2 on l1.logisticsid=l2.orderid
+        where l2.userid=#{userid}
+        <if test="type == 0">
+            and l1.status=1
+        </if>
+        <if test="type == 1">
+            and l1.status=2 or l1.status=3
+        </if>
+    </select>
+</mapper>

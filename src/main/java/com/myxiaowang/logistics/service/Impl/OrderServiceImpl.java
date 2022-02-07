@@ -4,6 +4,7 @@ import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.api.R;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.myxiaowang.logistics.dao.*;
@@ -13,9 +14,11 @@ import com.myxiaowang.logistics.util.Annotation.MyAop;
 import com.myxiaowang.logistics.util.RedisUtil.RedisPool;
 import com.myxiaowang.logistics.util.Reslut.ResponseResult;
 import com.myxiaowang.logistics.util.Reslut.ResultInfo;
+import lombok.val;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
@@ -23,6 +26,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.params.SetParams;
 
 import java.math.BigDecimal;
+import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -42,6 +46,14 @@ import static com.myxiaowang.logistics.util.Enum.OrderByEnum.*;
 public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements OrderService {
     Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
 
+    /**
+     * 获得订单的时候必须要保证订单能操作插入成功了
+     */
+    private static  Integer status=0;
+
+    public static Integer getStatus() {
+        return status;
+    }
 
     @Autowired
     private RedisPool redisPool;
@@ -55,6 +67,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     private ArrearsMapper arrearsMapper;
     @Autowired
     private TakePatsMapper takePatsMapper;
+
+
+    @Override
+    public ResponseResult<List<Logistics>> getOrderByUser(String userId, int type) {
+        return ResponseResult.success(logisticsMapper.getUserLogistics(userId,type));
+    }
 
     @Override
     public ResponseResult<List<Order>> getOrdersByCond(int v1, String con) {
@@ -165,7 +183,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     @Transactional(rollbackFor = Exception.class)
     @Override
     @MyAop(module = "getOrder")
-    public ResponseResult<String> getOrder(String orderId) {
+    public ResponseResult<String> getOrder(String orderId,String userId) {
         Order order;
         // AOP那里的时候 订单肯定存在redis内，如果redis不存在 说明没有订单
         try (Jedis jedis = redisPool.getConnection()) {
@@ -191,8 +209,20 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                 throw new RuntimeException("订单被占用");
             }
             jedis.set(orderId, JSON.toJSONString(order));
+            //我还需要更新我自己的订单表
+            Logistics logistics = new Logistics();
+            logistics.setLogistics(order.getOrderId());
+            logistics.setStatus(1);
+            logistics.setGoods(order.getGoodsName());
+            logistics.setGetUser(order.getUserId());
+            logistics.setCode(order.getCode());
+            logistics.setUserId(userId);
+            logistics.setMoney(order.getMoney());
+            logistics.setCreateTime(order.getCreateTime());
+            logisticsMapper.insert(logistics);
         } catch (Exception e) {
-            logger.error(e.getMessage());
+            status=1;
+            throw new RuntimeException(e.getMessage());
         }
         return ResponseResult.success("抢到订单");
     }

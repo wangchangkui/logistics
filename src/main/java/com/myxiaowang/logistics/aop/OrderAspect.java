@@ -1,9 +1,13 @@
 package com.myxiaowang.logistics.aop;
 
+import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.myxiaowang.logistics.dao.LogisticsMapper;
 import com.myxiaowang.logistics.dao.OrderMapper;
+import com.myxiaowang.logistics.pojo.Logistics;
 import com.myxiaowang.logistics.pojo.Order;
+import com.myxiaowang.logistics.service.Impl.OrderServiceImpl;
 import com.myxiaowang.logistics.util.RedisUtil.RedisPool;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -11,11 +15,11 @@ import org.aspectj.lang.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.params.SetParams;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -37,12 +41,23 @@ public class OrderAspect {
     @Autowired
     private OrderMapper orderMapper;
 
+    @Autowired
+    private LogisticsMapper logisticsMapper;
+
+
+    /**
+     * 环绕点
+     * 所有带上了注解的类 都会走这个AOP
+     * 不适用
+     * 不建议使用
+     */
     @Pointcut("@annotation(com.myxiaowang.logistics.util.Annotation.MyAop)")
     private void cutMethod(){
 
     }
     @Before("cutMethod()")
     public void before(JoinPoint joinPoint){
+
         Object[] args = joinPoint.getArgs();
         String arg = args[0].toString();
         // 先去查询订单是否还在
@@ -67,6 +82,8 @@ public class OrderAspect {
 
     @After("cutMethod()")
     public void after(JoinPoint joinPoint){
+        Integer status = OrderServiceImpl.getStatus();
+        System.out.println(status);
         Object[] args = joinPoint.getArgs();
         String arg = args[0].toString();
         //从redis中删除订单
@@ -76,7 +93,7 @@ public class OrderAspect {
                 jedis.del(arg);
             }
         }catch (Exception e){
-            log.error(e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
         // 最后通知用户 订单被接手了 消息框内 发送消息
     }
@@ -92,6 +109,8 @@ public class OrderAspect {
       return  proceedingJoinPoint.proceed();
     }
 
+    @AfterThrowing(value = "cutMethod()")
+    public void afterError(){
 
-
+    }
 }

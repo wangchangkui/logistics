@@ -2,6 +2,7 @@ package com.myxiaowang.logistics.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.myxiaowang.logistics.pojo.Logistics;
 import com.myxiaowang.logistics.pojo.Order;
 import com.myxiaowang.logistics.util.Reslut.ResponseResult;
 import java.util.*;
@@ -13,6 +14,14 @@ import java.util.*;
  * @createTime 2022年01月20日 17:07:00
  */
 public interface OrderService extends IService<Order> {
+
+    /**
+     * 根据type类型 返回用户抢到的订单
+     * @param userId 用户id
+     * @param type 类型
+     * @return 订单即集合
+     */
+    ResponseResult<List<Logistics>> getOrderByUser(String userId, int type);
 
     /**
      * 根据条件分类获取
@@ -44,7 +53,7 @@ public interface OrderService extends IService<Order> {
      * @param orderId orderId
      * @return 抢到的结果
      */
-    ResponseResult<String> getOrder(String orderId);
+    ResponseResult<String> getOrder(String orderId,String userId);
 
     /**
      * 创建订单

@@ -1,6 +1,7 @@
 package com.myxiaowang.logistics.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.myxiaowang.logistics.pojo.Logistics;
 import com.myxiaowang.logistics.pojo.Order;
 import com.myxiaowang.logistics.service.OrderService;
 import com.myxiaowang.logistics.util.Reslut.ResponseResult;
@@ -22,6 +23,11 @@ public class OrderController {
     private OrderService orderService;
 
 
+    @PostMapping("/getUserOrder")
+    public ResponseResult<List<Logistics>> getOrderByUser(@RequestParam("userId")String userId, @RequestParam("type")int type){
+        return orderService.getOrderByUser(userId,type);
+    }
+
     @PostMapping("/condition")
     public ResponseResult<List<Order>> getOrderByCond(@RequestParam("v1") int v1, @RequestParam("v2") String v2){
         return orderService.getOrdersByCond(v1,v2);
@@ -39,8 +45,8 @@ public class OrderController {
     }
 
     @PostMapping("/getOrder")
-    public ResponseResult<String> getOrder(@RequestParam("orderId") String orderId){
-       return orderService.getOrder(orderId);
+    public ResponseResult<String> getOrder(@RequestParam("orderId") String orderId,@RequestParam("userid") String userId){
+       return orderService.getOrder(orderId,userId);
     }
 
     @PostMapping("/createOrder")
