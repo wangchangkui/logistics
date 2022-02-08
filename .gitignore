@@ -7,6 +7,8 @@ target/*
 target/*.*
 target
 src/test
+src/test/*
+src/test/*.*
 
 *.yml
 # Log file
