@@ -4,6 +4,8 @@ import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.myxiaowang.logistics.common.RabbitMq.Produce;
+import com.myxiaowang.logistics.common.TxSms.SendSms;
 import com.myxiaowang.logistics.config.PropertiesConfig;
 import com.myxiaowang.logistics.dao.AddressMapper;
 import com.myxiaowang.logistics.dao.UserMapper;
@@ -25,6 +27,7 @@ import redis.clients.jedis.params.SetParams;
 import java.io.File;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 
 /**
  * @author wck
@@ -34,6 +37,10 @@ import java.util.Objects;
  */
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+
+    @Autowired
+    private SendSms sendSms;
+
     @Autowired
     private OSSClient.OSSBuilder ossBuilder;
 
@@ -45,6 +52,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Autowired
     private AddressMapper addressMapper;
+
+    @Autowired
+    private Produce produce;
+
+    @Autowired
+    private PropertiesConfig propertiesConfig;
 
 
     @Autowired
@@ -116,9 +129,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .setACCESS_KEY_SECRET(config.getACCESS_KEY_SECRET());
         OSSClient ossClient = ossBuilder.buidOSS(ossBuilder);
         // 在更新前删除用户原来的头像
-        ossClient.deleteFile("myxiaowang",userid+".png");
+        ossClient.deleteFile(propertiesConfig.getBUKKET_NAME(),userid+".png");
         // 上传图片
-        ossClient.uploadFile("myxiaowang", userid+".png",transFile);
+        ossClient.uploadFile(propertiesConfig.getBUKKET_NAME(), userid+".png",transFile);
         return ResponseResult.success(ossPath+userid+".png");
     }
 
@@ -126,18 +139,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public ResponseResult<User> checkSms(String phone, String sms) {
         User user=getOne(new QueryWrapper<User>().eq("phone", phone));
         if(Objects.isNull(user)){
-            return ResponseResult.error(ResultInfo.NO_RESULT);
+            return ResponseResult.error("用户不存在");
         }
         try(Jedis jedis=redisPool.getConnection()){
-            String yzm = jedis.get(user.getId().toString());
+            String yzm = jedis.get(phone);
             if(Objects.isNull(yzm) ){
-                return ResponseResult.error(ResultInfo.NO_RESULT);
+                return ResponseResult.error("验证码已过期,或者不存在");
             }
             if(!Objects.equals(yzm,sms)){
-                return ResponseResult.error(ResultInfo.NO_RESULT);
+                return ResponseResult.error("验证码不匹配");
             }
-            // 删除验证
-            jedis.del(user.getId().toString());
+            // 删除验证蚂
+            jedis.del(phone);
         }
         return ResponseResult.success(user);
     }
@@ -190,10 +203,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 设置redis参数
         SetParams setParams=new SetParams();
         // 60秒过期
-        setParams.nx().ex(60);
+        setParams=setParams.nx().ex(120);
         try(Jedis jedis=redisPool.getConnection()){
-            // 线上环境 请改为正常地发送验证码
-            jedis.set(phoneIs.getId().toString(),"1234");
+
+            Random random=new Random();
+            int code = random.nextInt(999999);
+            // 发送短息 测试环境下面请注释这段代码 因为费钱
+            //sendSms.sendSms(phone, String.valueOf(code));
+            jedis.set(phone, String.valueOf(code),setParams);
+            // 队列发送验证码
+            produce.sendMsg(phone);
         }
        return ResponseResult.success(ResultInfo.SUCCESS);
     }

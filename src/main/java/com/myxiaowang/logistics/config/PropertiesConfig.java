@@ -26,5 +26,23 @@ public class PropertiesConfig {
     private String MER_PRIVATE_KEY;
     @Value("${aliyun.APP_ID}")
     private String APP_ID;
+    @Value("${spring.rabbitmq.template.routing-key}")
+    private String route_key;
+    @Value("${spring.rabbitmq.template.exchange}")
+    private String exchange;
+    @Value("${tenxun.SDK_AppID}")
+    private String txSkdId;
+    @Value("${tenxun.APP_KEY}")
+    private String APP_KEY;
+    @Value("${tenxun.Template_ID}")
+    private String Template_ID;
+    @Value("${tenxun.SecrityId}")
+    private String tx_Secrity_Id;
+    @Value("${tenxun.SecrityKey}")
+    private String tx_Secrity_key;
+    @Value("${tenxun.APP_ID}")
+    private String tx_App_id;
+    @Value("${aliyun.BUKKET_NAME}")
+    private String BUKKET_NAME;
 
 }

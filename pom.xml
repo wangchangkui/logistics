@@ -25,9 +25,35 @@
         <jedis-version>3.3.0</jedis-version>
         <oos-version>3.13.2</oos-version>
         <commons-io>2.11.0</commons-io>
+        <jwt_version>0.9.1</jwt_version>
+        <rabbimq-version>5.13.1</rabbimq-version>
+        <tx_dx_version>4.0.11</tx_dx_version>
     </properties>
     <dependencies>
 
+        <dependency>
+            <groupId>com.tencentcloudapi</groupId>
+            <artifactId>tencentcloud-sdk-java</artifactId>
+            <version>${tx_dx_version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+            <version>${rabbimq-version}</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>${jwt_version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>

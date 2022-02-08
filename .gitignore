@@ -4,6 +4,7 @@
 .idea
 .mvn
 target
+test
 
 *.yml
 # Log file

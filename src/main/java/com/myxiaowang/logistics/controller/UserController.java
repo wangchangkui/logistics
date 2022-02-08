@@ -81,6 +81,12 @@ public class UserController {
         return userService.getUserAddress(openId);
     }
 
+
+    /**
+     * 这个接口需要做幂等处理
+     * @param phone
+     * @return
+     */
     @PostMapping("/sendSms")
     public ResponseResult<ResultInfo> sendSms(@RequestParam("phone") String phone){
         return userService.sendSms(phone);
