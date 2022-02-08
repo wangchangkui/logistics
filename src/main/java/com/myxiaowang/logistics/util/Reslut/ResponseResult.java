@@ -54,7 +54,19 @@ public class ResponseResult<T> {
         return result;
     }
 
-
+    /**
+     * 返回错误类型
+     * @param message 消息
+     * @param <T> <></>
+     * @return ResponseResult
+     */
+    public static <T> ResponseResult<T> error(String message){
+        ResponseResult<T> responseResult=getInstance();
+        responseResult.setMessage(message);
+        responseResult.setCode(ResultInfo.NO_RESULT.getCode());
+        responseResult.setData(null);
+        return responseResult;
+    }
 
 
     /**

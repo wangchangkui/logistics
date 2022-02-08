@@ -44,4 +44,8 @@ public class User implements Serializable {
     private BigDecimal decimals;
     @TableField(value = "version")
     private Integer version;
+    @TableField(value = "idcard")
+    private String idCard;
+    @TableField(value = "famount")
+    private BigDecimal famount;
 }

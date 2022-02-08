@@ -46,15 +46,6 @@ import static com.myxiaowang.logistics.util.Enum.OrderByEnum.*;
 public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements OrderService {
     Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
 
-    /**
-     * 获得订单的时候必须要保证订单能操作插入成功了
-     */
-    private static  Integer status=0;
-
-    public static Integer getStatus() {
-        return status;
-    }
-
     @Autowired
     private RedisPool redisPool;
     @Autowired
@@ -71,7 +62,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     @Override
     public ResponseResult<List<Logistics>> getOrderByUser(String userId, int type) {
-        System.out.println(userId+"|"+type);
         return ResponseResult.success(logisticsMapper.getUserLogistics(userId,type));
     }
 
@@ -149,9 +139,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         // 由于Aop的原因 只要订单存在，则一定在redis内
         try (Jedis jedis = redisPool.getConnection()) {
             String s = jedis.get(orderId);
-            if (Objects.isNull(s)) {
-                ResponseResult.error(ResultInfo.NO_RESULT);
-            }
             order = JSON.parseObject(s, Order.class);
         }
         if (Objects.isNull(order)) {
@@ -166,17 +153,32 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         BigDecimal bigDecimal2 = user2.getDecimals();
         Integer version = user.getVersion();
         Integer version2 = user2.getVersion();
-        // 需要修改的值
-        user.setDecimals(bigDecimal.add(order.getMoney()));
-        user.setVersion(version + 1);
-        user2.setDecimals(bigDecimal2.subtract(order.getMoney()));
-        user2.setVersion(version2 + 1);
-        // 更新数据
-        int update1 = userMapper.update(user, new QueryWrapper<User>().eq("userid", user.getUserid()).eq("money", bigDecimal).eq("version", version));
-        int update2 = userMapper.update(user2, new QueryWrapper<User>().eq("userid", user2.getUserid()).eq("money", bigDecimal2).eq("version", version));
-        // 需要保证2条数据能正常返回
-        if (update1 < 1 || update2 < 1) {
-            throw new RuntimeException("数据不正确");
+        // 存在用户钱不够扣的情况，提交数据 并且进入冻结金额
+        if (user2.getDecimals().compareTo(order.getMoney())<1) {
+            Arrears arrears = new Arrears();
+            arrears.setOrderId(orderId);
+            arrears.setMoney(order.getMoney());
+            arrears.setGoodsName(order.getGoodsName());
+            arrears.setUsername(user2.getUsername());
+            arrears.setUserId(userId);
+            arrears.setArrUserid(user2.getUserid());
+            arrearsMapper.insert(arrears);
+            // 让用户进入冻结金额数据
+            user.setFamount(order.getMoney());
+            userMapper.updateById(user);
+        }else{
+            // 需要修改的值
+            user.setDecimals(bigDecimal.add(order.getMoney()));
+            user.setVersion(version + 1);
+            user2.setDecimals(bigDecimal2.subtract(order.getMoney()));
+            user2.setVersion(version2 + 1);
+            // 更新数据
+            int update1 = userMapper.update(user, new QueryWrapper<User>().eq("userid", user.getUserid()).eq("money", bigDecimal).eq("version", version));
+            int update2 = userMapper.update(user2, new QueryWrapper<User>().eq("userid", user2.getUserid()).eq("money", bigDecimal2).eq("version", version));
+            // 需要保证2条数据能正常返回
+            if (update1 < 1 || update2 < 1) {
+                throw new RuntimeException("数据不正确");
+            }
         }
         return ResponseResult.success(ResultInfo.SUCCESS.getMessage());
     }
@@ -189,12 +191,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         // AOP那里的时候 订单肯定存在redis内，如果redis不存在 说明没有订单
         try (Jedis jedis = redisPool.getConnection()) {
             String rs = jedis.get(orderId);
-            if (Objects.nonNull(rs)) {
-                order = JSON.parseObject(rs, Order.class);
-            } else {
-                ResultInfo.NO_RESULT.setMessage("订单被抢走了或者订单不存在");
-                return ResponseResult.error(ResultInfo.NO_RESULT);
-            }
+            order = JSON.parseObject(rs, Order.class);
             // 如果status 不是1 则说明 已经被别人拿到了
             if (!Stutas.hasStutasWithWait(order.getStatus())) {
                 return ResponseResult.success("订单已经被别人抢到手了");
@@ -210,19 +207,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                 throw new RuntimeException("订单被占用");
             }
             jedis.set(orderId, JSON.toJSONString(order));
-            //我还需要更新我自己的订单表
-            Logistics logistics = new Logistics();
-            logistics.setLogistics(order.getOrderId());
-            logistics.setStatus(1);
-            logistics.setGoods(order.getGoodsName());
-            logistics.setGetUser(order.getUserId());
-            logistics.setCode(order.getCode());
-            logistics.setUserId(userId);
-            logistics.setMoney(order.getMoney());
-            logistics.setCreateTime(order.getCreateTime());
-            logisticsMapper.insert(logistics);
+
         } catch (Exception e) {
-            status=1;
             throw new RuntimeException(e.getMessage());
         }
         return ResponseResult.success("抢到订单");
@@ -264,7 +250,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                 SetParams setParams = new SetParams();
                 setParams.ex(86000);
                 jedis.set(order.getOrderId(), s, setParams);
-                jedis.set(order.getCode(), JSON.toJSONString(takeParts));
+                jedis.set(order.getCode(), JSON.toJSONString(takeParts),setParams);
                 takePatsMapper.insert(takeParts);
                 return ResponseResult.success("生成订单成功");
             }

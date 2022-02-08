@@ -7,7 +7,14 @@ package com.myxiaowang.logistics.util.Enum;
  * @createTime 2022年01月28日 09:26:00
  */
 public enum OrderByEnum {
-    A("a"),B("b"),C("c"),D("d"),E("e");
+    /**
+     * 订单的分类枚举 具体查service类
+     */
+    A("a"),
+    B("b"),
+    C("c"),
+    D("d"),
+    E("e");
     private String code;
 
     OrderByEnum(String code) {

@@ -3,25 +3,23 @@ package com.myxiaowang.logistics.aop;
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.google.gson.JsonObject;
-import com.myxiaowang.logistics.dao.ArrearsMapper;
-import com.myxiaowang.logistics.dao.LogisticsMapper;
-import com.myxiaowang.logistics.dao.OrderMapper;
-import com.myxiaowang.logistics.dao.UserMapper;
-import com.myxiaowang.logistics.pojo.Arrears;
-import com.myxiaowang.logistics.pojo.Logistics;
-import com.myxiaowang.logistics.pojo.Order;
-import com.myxiaowang.logistics.pojo.User;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.myxiaowang.logistics.dao.*;
+import com.myxiaowang.logistics.pojo.*;
 import com.myxiaowang.logistics.util.RedisUtil.RedisPool;
+import com.myxiaowang.logistics.util.Reslut.ResponseResult;
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.After;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.interceptor.DefaultTransactionAttribute;
 import redis.clients.jedis.Jedis;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -34,6 +32,16 @@ import java.util.Objects;
 @Aspect
 public class ConfirmOrderAop {
 
+    private final Logger log = LoggerFactory.getLogger(ConfirmOrderAop.class);
+
+    /**
+     * 用于判断是否是进入赊账表
+     * 默认不进入赊账表
+     */
+    private Integer status=2;
+
+    private TransactionStatus transaction;
+
     @Autowired
     private OrderMapper orderMapper;
 
@@ -41,16 +49,25 @@ public class ConfirmOrderAop {
     private UserMapper userMapper;
 
     @Autowired
-    private ArrearsMapper arrearsMapper;
+    private TakePatsMapper takePatsMapper;
 
     @Autowired
     private LogisticsMapper logisticsMapper;
 
     @Autowired
+    private DataSourceTransactionManager dataSourceTransactionManager;
+
+    @Autowired
     private RedisPool redisPool;
 
-    @Before(value = "execution(* com.myxiaowang.logistics.service.OrderService.confirmOrder(*,*))")
-    public void before(JoinPoint joinPoint){
+    @Pointcut("execution(* com.myxiaowang.logistics.service.OrderService.confirmOrder(*,*))")
+    public void aspect(){}
+
+    @Around(value = "aspect()")
+    public Object before(ProceedingJoinPoint joinPoint) throws Throwable {
+        if(transaction==null){
+            transaction= dataSourceTransactionManager.getTransaction(new DefaultTransactionAttribute());
+        }
         Object[] args = joinPoint.getArgs();
         try(Jedis jedis = redisPool.getConnection()){
             String s = jedis.get(args[1].toString());
@@ -66,48 +83,63 @@ public class ConfirmOrderAop {
             }else{
                 order=JSON.parseObject(s,Order.class);
             }
-
-            // 有且仅有订单存在的时候，才去判断用户钱是否狗扣
+            // 有且仅有订单存在的时候，才去判断用户钱是否够扣
             if(Objects.nonNull(order)){
+                User user2=userMapper.selectOne(new QueryWrapper<User>().eq("userid",order.getUserId()));
+                if (user2.getDecimals().compareTo(order.getMoney())<1) {
+                    status=3;
+                }
                 // 当前用户的数据
                 User user = userMapper.selectOne(new QueryWrapper<User>().eq("userid", args[0]));
-                // 被扣钱的用户的数据
-                User user2 = userMapper.selectOne(new QueryWrapper<User>().eq("userid", order.getUserId()));
-                if (user2.getDecimals().compareTo(order.getMoney())<1) {
-                    // 钱不够扣 进入赊账表
-                    Arrears arrears = new Arrears();
-                    arrears.setOrderId(args[1].toString());
-                    arrears.setMoney(order.getMoney());
-                    arrears.setGoodsName(order.getGoodsName());
-                    arrears.setUsername(user.getUsername());
-                    arrears.setUserId(user2.getUserid());
-                    arrearsMapper.insert(arrears);
+                if(Objects.isNull(user)){
+                    return ResponseResult.error("不存在的用户");
                 }
+                if(StringUtils.isEmpty(user.getIdCard())){
+                    return ResponseResult.error("用户未认证，请先认证用户");
+                }
+                return joinPoint.proceed();
+            }
+        }
+        return ResponseResult.error("未找到订单信息");
+
+    }
+
+    @After(value = "aspect()")
+    public void after(JoinPoint joinPoint){
+        Object[] args = joinPoint.getArgs();
+        // 从redis中获取数据
+        try(Jedis jedis = redisPool.getConnection()){
+            String s = jedis.get(args[1].toString());
+            Order order;
+            // 可能回出现redis数据丢失的情况
+            // 所以建议还是查询数据库一次
+            if(Objects.nonNull(s)){
+                order = JSON.parseObject(s, Order.class);
+            }else{
+                order = orderMapper.selectOne(new QueryWrapper<Order>().eq("orderid", args[1]));
+            }
+            if(Objects.nonNull(order)){
+                Logistics logistics = logisticsMapper.selectOne(new QueryWrapper<Logistics>().eq("userid", args[0].toString()).eq("logisticsid", args[1].toString()));
+                logistics.setStatus(status);
+                logisticsMapper.updateById(logistics);
+                // 最后删除redis的订单数据
+                jedis.del(args[1].toString());
+                // 修改订单状态
+                order.setStatus(5);
+                orderMapper.updateById(order);
+                // 删除取货码
+                takePatsMapper.delete(new QueryWrapper<TakeParts>().eq("code",order.getCode()).eq("orderid",order.getOrderId()));
+                jedis.del(order.getCode());
+
+                dataSourceTransactionManager.commit(transaction);
             }
         }
     }
 
-    @After(value = "execution(* com.myxiaowang.logistics.service.OrderService.confirmOrder(*,*))")
-    public void after(JoinPoint joinPoint){
-        Object[] args = joinPoint.getArgs();
-        try(Jedis jedis = redisPool.getConnection()){
-            String s = jedis.get(args[1].toString());
-            if(Objects.nonNull(s)){
-                Order order = JSON.parseObject(s, Order.class);
-                Logistics logistics = new Logistics();
-                logistics.setStatus(2);
-                logistics.setLogistics(IdUtil.simpleUUID());
-                logistics.setUserId(args[0].toString());
-                logistics.setGoods(order.getGoodsName());
-                logistics.setMoney(order.getMoney());
-                logistics.setCreateTime(order.getCreateTime());
-                logistics.setGetUser(order.getUserId());
-                logisticsMapper.insert(logistics);
-                // 最后删除redis的订单数据
-                jedis.del(args[1].toString());
-            }
-        }
-
+    @AfterThrowing(value = "aspect()",throwing = "exception")
+    public void afterThrowing(Throwable exception){
+        log.error(exception.getMessage());
+        dataSourceTransactionManager.rollback(transaction);
     }
 
 }
