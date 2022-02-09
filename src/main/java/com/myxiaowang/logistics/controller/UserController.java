@@ -60,6 +60,15 @@ public class UserController {
         return userService.uploadHeader(userId,file);
     }
 
+    @PostMapping("/upload/check")
+    public ResponseResult<String> uploadCheck(MultipartFile file){
+        return userService.uploadFileCheck(file);
+    }
+
+    @PostMapping("/upload/contrast")
+    public ResponseResult<String> uploadContrast(@RequestParam("filePath") String filePath,@RequestParam("userName") String userName, @RequestParam("card") String card,@RequestParam("userId") String userId){
+        return userService.checkCard(filePath,userName,card,userId);
+    }
 
     @PostMapping("/check")
     public ResponseResult<User> checkSms(@RequestParam("phone") String phone,@RequestParam("sms") String sms){

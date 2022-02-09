@@ -48,4 +48,6 @@ public class User implements Serializable {
     private String idCard;
     @TableField(value = "famount")
     private BigDecimal famount;
+    @TableField(value = "name")
+    private String name;
 }

@@ -2,6 +2,7 @@ package com.myxiaowang.logistics.service.Impl;
 
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.myxiaowang.logistics.common.RabbitMq.Produce;
@@ -13,6 +14,7 @@ import com.myxiaowang.logistics.pojo.Address;
 import com.myxiaowang.logistics.pojo.User;
 import com.myxiaowang.logistics.service.UserService;
 import com.myxiaowang.logistics.util.FileUtils;
+import com.myxiaowang.logistics.util.HttpRequest.HttpRequest;
 import com.myxiaowang.logistics.util.OSS.OSSClient;
 import com.myxiaowang.logistics.util.RedisUtil.RedisPool;
 import com.myxiaowang.logistics.util.Reslut.ResponseResult;
@@ -25,9 +27,12 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.params.SetParams;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author wck
@@ -38,8 +43,6 @@ import java.util.Random;
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
-    @Autowired
-    private SendSms sendSms;
 
     @Autowired
     private OSSClient.OSSBuilder ossBuilder;
@@ -68,6 +71,67 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Value("${filePath.osspath}")
     private String ossPath;
 
+    @Override
+    public ResponseResult<String> checkCard(String filePath, String name, String card,String userId) {
+        // 比对身份证的正面照数据
+        HashMap<String, String> header = new HashMap<>();
+        header.put("Content-Type","application/json; charset=UTF-8");
+        header.put("Authorization",propertiesConfig.getAuthentication());
+        HashMap<String, String> json = new HashMap<>(8);
+        json.put("side","face");
+        HashMap<String, Object> query = new HashMap<>(8);
+        query.put("image",filePath);
+        query.put("configure",json);
+        String s = JSONObject.toJSONString(query);
+        String s1 = null;
+        try {
+            s1 = HttpRequest.postRequest(propertiesConfig.getAuthUrl(), s, header);
+        } catch (ExecutionException | InterruptedException e) {
+          log.error(e.getMessage());
+        }
+        JSONObject res = JSON.parseObject(s1);
+        if(res.containsKey("name")){
+            if(res.get("name").equals(name) && res.get("num").equals(card)){
+                // 读取用户信息
+                try(Jedis jedis=redisPool.getConnection()){
+                    String user = jedis.get("userId");
+                    User myUser;
+                    if(Objects.isNull(user)){
+                        myUser=getOne(new QueryWrapper<User>().eq("userid",userId));
+                    }else{
+                        myUser=JSON.parseObject(user,User.class);
+                    }
+                    if(Objects.isNull(user)){
+                        return ResponseResult.error("用户不存在");
+                    }
+                    myUser.setIdCard(card);
+                    myUser.setName(name);
+                    userMapper.updateById(myUser);
+                }
+                return ResponseResult.success("认证成功");
+            }
+            return ResponseResult.error("用户不匹配");
+        }
+        return ResponseResult.error("身份证证件照不匹配");
+    }
+
+    @Override
+    public ResponseResult<String> uploadFileCheck(MultipartFile file) {
+        File target = FileUtils.multipartFileTransFileOnFix(file, filePath + "/");
+        OSSClient.OSSBuilder ossBuilder = this.ossBuilder.setEND_POINT(config.getEND_POINT())
+                .setACCESS_KEY_ID(config.getACCESS_KEY_ID())
+                .setACCESS_KEY_SECRET(config.getACCESS_KEY_SECRET());
+        OSSClient ossClient = ossBuilder.buidOSS(ossBuilder);
+        String fileName = IdUtil.simpleUUID().substring(0, 8)+".png";
+        ossClient.uploadFile(config.getBUKKET_NAME(),fileName,target);
+        // 删除文件
+        try {
+            org.apache.commons.io.FileUtils.delete(target);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return ResponseResult.success(ossPath+fileName);
+    }
 
     @Override
     public ResponseResult<Address> getAddressById(String id) {
@@ -121,7 +185,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public ResponseResult<String> uploadHeader(String userid,MultipartFile file) {
-        System.out.println(userid);
         // 上传图片文件
         File transFile = FileUtils.multipartFileTransFileOnFix(file, filePath+"/");
         OSSClient.OSSBuilder ossBuilder = this.ossBuilder.setEND_POINT(config.getEND_POINT())

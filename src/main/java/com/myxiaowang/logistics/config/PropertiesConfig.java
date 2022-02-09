@@ -44,5 +44,9 @@ public class PropertiesConfig {
     private String tx_App_id;
     @Value("${aliyun.BUKKET_NAME}")
     private String BUKKET_NAME;
+    @Value("${aliyun.Authorization}")
+    private String authentication;
+    @Value("${aliyun.AuthUrl}")
+    private String authUrl;
 
 }

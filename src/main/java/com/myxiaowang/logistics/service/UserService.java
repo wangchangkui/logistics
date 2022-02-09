@@ -18,6 +18,23 @@ import java.util.*;
 public interface UserService extends IService<User> {
 
     /**
+     * 身份证必对
+     * @param filePath 身份证地址
+     * @param name 名称
+     * @param card 身份证号码
+     * @param userId 用户ID
+     * @return ResponseResult
+     */
+    ResponseResult<String> checkCard(String filePath,String name,String card,String userId);
+
+    /**
+     * 仅使用验证身份证的时候使用此接口
+     * @param file 文件
+     * @return 上传结果的url
+     */
+    ResponseResult<String> uploadFileCheck(MultipartFile file);
+
+    /**
      * 根据id获取数据
      * @param id id
      * @return Address
