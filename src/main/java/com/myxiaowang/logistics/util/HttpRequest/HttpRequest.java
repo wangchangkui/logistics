@@ -103,7 +103,6 @@ public class HttpRequest {
      * @throws InterruptedException 阻塞异常
      */
     public static String postRequest(String url,String json,Map<String, String> header) throws ExecutionException, InterruptedException {
-        OkHttpClient okHttpClient = new OkHttpClient();
         RequestBody bode=RequestBody.create(MediaType.parse("application/json; charset=utf-8"),json);
         Builder url1 = new Builder().post(bode).url(url);
         header.forEach(url1::addHeader);

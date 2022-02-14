@@ -1,27 +1,35 @@
 package com.myxiaowang.logistics.service.Impl;
 
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.crypto.digest.MD5;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
+import com.baomidou.mybatisplus.extension.api.R;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.gson.JsonObject;
 import com.myxiaowang.logistics.common.RabbitMq.Produce;
-import com.myxiaowang.logistics.common.TxSms.SendSms;
 import com.myxiaowang.logistics.config.PropertiesConfig;
 import com.myxiaowang.logistics.dao.AddressMapper;
 import com.myxiaowang.logistics.dao.UserMapper;
 import com.myxiaowang.logistics.pojo.Address;
 import com.myxiaowang.logistics.pojo.User;
 import com.myxiaowang.logistics.service.UserService;
+import com.myxiaowang.logistics.util.Annotation.LoginAop;
 import com.myxiaowang.logistics.util.FileUtils;
 import com.myxiaowang.logistics.util.HttpRequest.HttpRequest;
 import com.myxiaowang.logistics.util.OSS.OSSClient;
+import com.myxiaowang.logistics.util.OSS.OssUtil;
 import com.myxiaowang.logistics.util.RedisUtil.RedisPool;
 import com.myxiaowang.logistics.util.Reslut.ResponseResult;
 import com.myxiaowang.logistics.util.Reslut.ResultInfo;
+import io.jsonwebtoken.lang.Strings;
+import org.apache.commons.codec.digest.Md5Crypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.params.SetParams;
@@ -43,9 +51,13 @@ import java.util.concurrent.ExecutionException;
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
+    /**
+     * http请求的错误信息
+     */
+    private static final String ERROR="Invalid Input - wrong category";
 
     @Autowired
-    private OSSClient.OSSBuilder ossBuilder;
+    private OssUtil ossUtil;
 
     @Autowired
     private RedisPool redisPool;
@@ -71,10 +83,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Value("${filePath.osspath}")
     private String ossPath;
 
+    @LoginAop(login = "check")
+    @Override
+    public ResponseResult<User> passWordLogin(String username, String password) {
+        User one = getOne(new QueryWrapper<User>().eq("username", username).eq("password", Md5Crypt.md5Crypt(password.getBytes(), "$1$myxiaowang")));
+        if(ObjectUtils.isNull(one)){
+            return ResponseResult.error(ResultInfo.NO_RESULT);
+        }
+        try(Jedis jedis=redisPool.getConnection()){
+            jedis.lpush("userList",JSON.toJSONString(one));
+        }
+       return ResponseResult.success(one);
+    }
+
     @Override
     public ResponseResult<String> checkCard(String filePath, String name, String card,String userId) {
         // 比对身份证的正面照数据
-        HashMap<String, String> header = new HashMap<>();
+        HashMap<String, String> header = new HashMap<>(8);
         header.put("Content-Type","application/json; charset=UTF-8");
         header.put("Authorization",propertiesConfig.getAuthentication());
         HashMap<String, String> json = new HashMap<>(8);
@@ -89,7 +114,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         } catch (ExecutionException | InterruptedException e) {
           log.error(e.getMessage());
         }
+        OSSClient ossClient = ossUtil.getClient();
+        ossClient.deleteFile(config.getBUKKET_NAME(),filePath.substring(filePath.lastIndexOf("/")+1));
+        if(ERROR.equals(s1)){
+            return ResponseResult.error("上传的身份证照片不正确");
+        }
         JSONObject res = JSON.parseObject(s1);
+        // 得到结果后还需要删除照片
         if(res.containsKey("name")){
             if(res.get("name").equals(name) && res.get("num").equals(card)){
                 // 读取用户信息
@@ -118,10 +149,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public ResponseResult<String> uploadFileCheck(MultipartFile file) {
         File target = FileUtils.multipartFileTransFileOnFix(file, filePath + "/");
-        OSSClient.OSSBuilder ossBuilder = this.ossBuilder.setEND_POINT(config.getEND_POINT())
-                .setACCESS_KEY_ID(config.getACCESS_KEY_ID())
-                .setACCESS_KEY_SECRET(config.getACCESS_KEY_SECRET());
-        OSSClient ossClient = ossBuilder.buidOSS(ossBuilder);
+        OSSClient ossClient = ossUtil.getClient();
         String fileName = IdUtil.simpleUUID().substring(0, 8)+".png";
         ossClient.uploadFile(config.getBUKKET_NAME(),fileName,target);
         // 删除文件
@@ -187,10 +215,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public ResponseResult<String> uploadHeader(String userid,MultipartFile file) {
         // 上传图片文件
         File transFile = FileUtils.multipartFileTransFileOnFix(file, filePath+"/");
-        OSSClient.OSSBuilder ossBuilder = this.ossBuilder.setEND_POINT(config.getEND_POINT())
-                .setACCESS_KEY_ID(config.getACCESS_KEY_ID())
-                .setACCESS_KEY_SECRET(config.getACCESS_KEY_SECRET());
-        OSSClient ossClient = ossBuilder.buidOSS(ossBuilder);
+        OSSClient ossClient = ossUtil.getClient();
         // 在更新前删除用户原来的头像
         ossClient.deleteFile(propertiesConfig.getBUKKET_NAME(),userid+".png");
         // 上传图片
@@ -221,7 +246,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public ResponseResult<User> getUser(String openId) {
         User loginUser=null;
-        try (Jedis jedis=redisPool.getConnection();){
+        try (Jedis jedis=redisPool.getConnection()){
             String user = jedis.get("openid");
             // redis 不存在的情况下
             if(Objects.isNull(user)){
@@ -242,7 +267,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public ResponseResult<String> signUser(User user) {
-        user.setPassword(IdUtil.fastSimpleUUID());
+        // 设置密码
+        user.setPassword(Md5Crypt.md5Crypt(user.getPassword().getBytes(),"$1$myxiaowang"));
         user.setPhone("");
         int insert = userMapper.insert(user);
         return ResponseResult.success(""+insert);

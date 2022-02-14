@@ -3,6 +3,7 @@ package com.myxiaowang.logistics.controller;
 import com.myxiaowang.logistics.pojo.Address;
 import com.myxiaowang.logistics.pojo.User;
 import com.myxiaowang.logistics.service.UserService;
+import com.myxiaowang.logistics.util.Annotation.LoginAop;
 import com.myxiaowang.logistics.util.Reslut.ResponseResult;
 import com.myxiaowang.logistics.util.Reslut.ResultInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,13 @@ import java.util.List;
 public class UserController {
     @Autowired
     private UserService userService;
+
+
+    @LoginAop(login = "pass")
+    @PostMapping("/passwdByUser")
+    public ResponseResult<User> passWordByUser(@RequestParam("userName") String userName,@RequestParam("password") String password){
+        return userService.passWordLogin(userName,password);
+    }
 
 
     @GetMapping("/getAddressById")

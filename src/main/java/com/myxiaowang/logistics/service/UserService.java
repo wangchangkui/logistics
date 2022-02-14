@@ -18,6 +18,14 @@ import java.util.*;
 public interface UserService extends IService<User> {
 
     /**
+     * 根据账号密码登录
+     * @param username 用户名
+     * @param password 密码
+     * @return
+     */
+    ResponseResult<User> passWordLogin(String username,String password);
+
+    /**
      * 身份证必对
      * @param filePath 身份证地址
      * @param name 名称
