@@ -86,7 +86,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @LoginAop(login = "check")
     @Override
     public ResponseResult<User> passWordLogin(String username, String password) {
-        User one = getOne(new QueryWrapper<User>().eq("username", username).eq("password", Md5Crypt.md5Crypt(password.getBytes(), "$1$myxiaowang")));
+        User one = getOne(new QueryWrapper<User>().eq("username", username).eq("password", Md5Crypt.md5Crypt(password.getBytes(), propertiesConfig.getSalt())));
         if(ObjectUtils.isNull(one)){
             return ResponseResult.error(ResultInfo.NO_RESULT);
         }

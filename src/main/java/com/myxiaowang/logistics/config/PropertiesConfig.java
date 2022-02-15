@@ -48,5 +48,7 @@ public class PropertiesConfig {
     private String authentication;
     @Value("${aliyun.AuthUrl}")
     private String authUrl;
+    @Value("${securitySalt}")
+    private String salt;
 
 }

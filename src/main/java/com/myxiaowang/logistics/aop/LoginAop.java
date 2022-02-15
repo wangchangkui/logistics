@@ -37,6 +37,9 @@ public class LoginAop {
     @Autowired
     private RedisPool redisPool;
 
+    @Autowired
+    private PropertiesConfig propertiesConfig;
+
 
     @Pointcut("@annotation(com.myxiaowang.logistics.util.Annotation.LoginAop)")
     private void cutPoint(){}
@@ -49,7 +52,7 @@ public class LoginAop {
             List<String> userList = jedis.lrange("userList", 0, -1);
             User loginUser = userList.stream().filter(z -> {
                 User user1 = JSON.parseObject(z, User.class);
-                return args[0].toString().equals(user1.getUsername()) && Md5Crypt.md5Crypt(args[1].toString().getBytes(),"$1$myxiaowang").equals(user1.getPassword());
+                return args[0].toString().equals(user1.getUsername()) && Md5Crypt.md5Crypt(args[1].toString().getBytes(),propertiesConfig.getSalt()).equals(user1.getPassword());
             }).map(t->
                 JSON.parseObject(t,User.class)
             ).findFirst().orElse(null);
