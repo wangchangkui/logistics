@@ -9,6 +9,7 @@ import com.myxiaowang.logistics.pojo.User;
 import com.myxiaowang.logistics.util.RedisUtil.RedisPool;
 import com.myxiaowang.logistics.util.Reslut.ResponseResult;
 import com.myxiaowang.logistics.util.Reslut.ResultInfo;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.codec.digest.Md5Crypt;
 import org.apache.logging.log4j.util.Strings;
 import org.aspectj.lang.JoinPoint;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 
@@ -37,10 +39,6 @@ public class LoginAop {
     @Autowired
     private RedisPool redisPool;
 
-    @Autowired
-    private PropertiesConfig propertiesConfig;
-
-
     @Pointcut("@annotation(com.myxiaowang.logistics.util.Annotation.LoginAop)")
     private void cutPoint(){}
 
@@ -52,7 +50,7 @@ public class LoginAop {
             List<String> userList = jedis.lrange("userList", 0, -1);
             User loginUser = userList.stream().filter(z -> {
                 User user1 = JSON.parseObject(z, User.class);
-                return args[0].toString().equals(user1.getUsername()) && Md5Crypt.md5Crypt(args[1].toString().getBytes(),propertiesConfig.getSalt()).equals(user1.getPassword());
+                return args[0].toString().equals(user1.getUsername()) && DigestUtils.md5Hex(args[1].toString().getBytes(StandardCharsets.UTF_8)).equals(user1.getPassword());
             }).map(t->
                 JSON.parseObject(t,User.class)
             ).findFirst().orElse(null);

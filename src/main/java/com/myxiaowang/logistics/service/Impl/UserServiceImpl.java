@@ -25,6 +25,7 @@ import com.myxiaowang.logistics.util.RedisUtil.RedisPool;
 import com.myxiaowang.logistics.util.Reslut.ResponseResult;
 import com.myxiaowang.logistics.util.Reslut.ResultInfo;
 import io.jsonwebtoken.lang.Strings;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.codec.digest.Md5Crypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,6 +37,7 @@ import redis.clients.jedis.params.SetParams;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -86,7 +88,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @LoginAop(login = "check")
     @Override
     public ResponseResult<User> passWordLogin(String username, String password) {
-        User one = getOne(new QueryWrapper<User>().eq("username", username).eq("password", Md5Crypt.md5Crypt(password.getBytes(), propertiesConfig.getSalt())));
+        password = DigestUtils.md5Hex(password.getBytes(StandardCharsets.UTF_8));
+        User one = getOne(new QueryWrapper<User>().eq("username", username).eq("password", password));
         if(ObjectUtils.isNull(one)){
             return ResponseResult.error(ResultInfo.NO_RESULT);
         }
