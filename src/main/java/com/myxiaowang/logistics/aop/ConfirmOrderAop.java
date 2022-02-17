@@ -20,6 +20,9 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.interceptor.DefaultTransactionAttribute;
 import redis.clients.jedis.Jedis;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.Objects;
 
 /**
@@ -126,12 +129,15 @@ public class ConfirmOrderAop {
                 jedis.del(args[1].toString());
                 // 修改订单状态
                 order.setStatus(5);
+                order.setOverTime(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
                 orderMapper.updateById(order);
                 // 删除取货码
                 takePatsMapper.delete(new QueryWrapper<TakeParts>().eq("code",order.getCode()).eq("orderid",order.getOrderId()));
                 jedis.del(order.getCode());
 
                 dataSourceTransactionManager.commit(transaction);
+                // 改回默认值
+                status=2;
             }
         }
     }

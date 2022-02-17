@@ -85,6 +85,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Value("${filePath.osspath}")
     private String ossPath;
 
+    @Override
+    public ResponseResult<User> getUserInfo(String userId) {
+
+        return null;
+    }
+
     @LoginAop(login = "check")
     @Override
     public ResponseResult<User> passWordLogin(String username, String password) {

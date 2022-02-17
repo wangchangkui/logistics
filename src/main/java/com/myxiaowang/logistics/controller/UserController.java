@@ -26,6 +26,7 @@ public class UserController {
     private UserService userService;
 
 
+
     @LoginAop(login = "pass")
     @PostMapping("/passwdByUser")
     public ResponseResult<User> passWordByUser(@RequestParam("userName") String userName,@RequestParam("password") String password){

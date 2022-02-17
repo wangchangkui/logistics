@@ -18,6 +18,13 @@ import java.util.*;
 public interface UserService extends IService<User> {
 
     /**
+     * 根据userId获取用户的数据
+     * @param userId userId
+     * @return 返回结果
+     */
+    ResponseResult<User> getUserInfo(String userId);
+
+    /**
      * 根据账号密码登录
      * @param username 用户名
      * @param password 密码
