@@ -11,6 +11,7 @@ import com.myxiaowang.logistics.dao.*;
 import com.myxiaowang.logistics.pojo.*;
 import com.myxiaowang.logistics.service.OrderService;
 import com.myxiaowang.logistics.util.Annotation.MyAop;
+import com.myxiaowang.logistics.util.OrderUtil;
 import com.myxiaowang.logistics.util.RedisUtil.RedisPool;
 import com.myxiaowang.logistics.util.Reslut.ResponseResult;
 import com.myxiaowang.logistics.util.Reslut.ResultInfo;
@@ -33,7 +34,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
-import static com.myxiaowang.logistics.util.Enum.OrderByEnum.*;
 
 
 /**
@@ -67,62 +67,15 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     @Override
     public ResponseResult<List<Order>> getOrdersByCond(int v1, String con) {
-        switch (v1){
-            case 0:
-                if(A.getCode().equals(con)){
-                  return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1)));
-                }
-                if(B.getCode().equals(con)){
-                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).orderByDesc("create_time")));
-                }
-                if(C.getCode().equals(con)){
-                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).orderByAsc("money")));
-                }
-                if(D.getCode().equals(con)){
-                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).orderByAsc("create_time")));
-                }
-                if(E.getCode().equals(con)){
-                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).orderByDesc("money")));
-                }
-                break;
-            case 1:
-                if(A.getCode().equals(con)){
-                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).eq("goodsName","取快递")));
-                }
-                if(B.getCode().equals(con)){
-                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).eq("goodsName","取快递").orderByDesc("create_time")));
-                }
-                if(C.getCode().equals(con)){
-                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).eq("goodsName","取快递").orderByAsc("money")));
-                }
-                if(D.getCode().equals(con)){
-                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).eq("goodsName","取快递").orderByAsc("create_time")));
-                }
-                if(E.getCode().equals(con)){
-                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).eq("goodsName","取快递").orderByDesc("money")));
-                }
-                break;
-            case 2:
-                if(A.getCode().equals(con)){
-                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).eq("goodsName","打印")));
-                }
-                if(B.getCode().equals(con)){
-                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).eq("goodsName","打印").orderByDesc("create_time")));
-                }
-                if(C.getCode().equals(con)){
-                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).eq("goodsName","打印").orderByAsc("money")));
-                }
-                if(D.getCode().equals(con)){
-                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).eq("goodsName","打印").orderByAsc("create_time")));
-                }
-                if(E.getCode().equals(con)){
-                    return ResponseResult.success(orderMapper.selectList(new QueryWrapper<Order>().eq("status",1).eq("goodsName","打印").orderByDesc("money")));
-                }
-                break;
-            default:
-                return null;
+        QueryWrapper<Order> select;
+        try {
+            select = OrderUtil.getSelect(v1, con);
+        }catch (RuntimeException e){
+            logger.error(e.getMessage());
+            return null;
         }
-        return null;
+        List<Order> list = list(select);
+        return ResponseResult.success(list);
     }
 
     @Override
