@@ -29,8 +29,21 @@
         <rabbimq-version>5.13.1</rabbimq-version>
         <tx_dx_version>4.0.11</tx_dx_version>
         <okhttp_version>4.9.3</okhttp_version>
+        <websocket-version>1.5.2</websocket-version>
     </properties>
     <dependencies>
+
+
+        <dependency>
+            <groupId>org.java-websocket</groupId>
+            <artifactId>Java-WebSocket</artifactId>
+            <version>${websocket-version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-websocket</artifactId>
+        </dependency>
 
 
         <!-- https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp -->
