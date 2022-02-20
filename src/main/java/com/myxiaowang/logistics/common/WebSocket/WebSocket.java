@@ -1,13 +1,14 @@
 package com.myxiaowang.logistics.common.WebSocket;
 
+import cn.hutool.extra.spring.SpringUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.myxiaowang.logistics.dao.MessageMapper;
 import com.myxiaowang.logistics.pojo.Message;
-import lombok.Data;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -27,47 +28,57 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @ServerEndpoint(value = "/live",encoders = WebSocketEncoder.class)
 @Component(value = "webSocketByUser")
-@Data
 public class WebSocket {
-    @Autowired
     private MessageMapper messageMapper;
-
     private static final Logger logger = LoggerFactory.getLogger(WebSocket.class);
     /**
      * 连接缓存
      */
-    private static Map<String, Session> webSocket = new ConcurrentHashMap<>(16);
+    private static final Map<String, Session> WEB_SOCKET = new ConcurrentHashMap<>(16);
     public static ArrayList<Message> theMessage=new ArrayList<>(100);
     private static final int SIZE=100;
+    /**
+     * 心跳监测
+     */
+    private static final String PONG="ping";
 
-    private String userId;
-    private static final String USERKEY="userId";
 
-    @Scheduled(cron = "${Scheduled.message}")
-    public void insertMessage(){
-        if(theMessage.size()>0){
-            messageMapper.insertList(theMessage);
-        }
+
+    public void setMapper(MessageMapper messageMapper){
+        this.messageMapper=messageMapper;
     }
 
 
     public Set<String> getOnlineUserId(){
-        return  webSocket.keySet();
+        return  WEB_SOCKET.keySet();
     }
 
     public int getWebsocketSize(){
-        return webSocket.size();
+        return WEB_SOCKET.size();
+    }
+
+    @Scheduled(cron = "${Scheduled.message}")
+    public void insertMessage(){
+        if(ObjectUtils.isNull(messageMapper)){
+            messageMapper=SpringUtil.getBean(MessageMapper.class);
+        }
+        if(WebSocket.theMessage.size()>0){
+            messageMapper.insertList(WebSocket.theMessage);
+            WebSocket.theMessage=new ArrayList<>(100);
+        }
     }
 
     /**
      * 连接建立成功调用的方法
      */
     @OnOpen
-    public void onOpen(Session session) throws IOException {
+    public void onOpen(Session session)  {
         logger.info(session.getRequestParameterMap().get("userName").get(0)+"已经连接上websocket");
+        if(ObjectUtils.isNull(messageMapper)){
+            messageMapper=SpringUtil.getBean(MessageMapper.class);
+        }
         List<String> userId = session.getRequestParameterMap().get("id");
-        this.userId=userId.get(0);
-        webSocket.put(userId.get(0),session);
+        WEB_SOCKET.put(userId.get(0),session);
     }
 
     /**
@@ -76,7 +87,7 @@ public class WebSocket {
     @OnClose
     public void onClose(Session session) throws IOException {
         logger.info(session.getRequestParameterMap().get("userName").get(0)+"断开了连接");
-        webSocket.remove(session.getRequestParameterMap().get("id").get(0));
+        WEB_SOCKET.remove(session.getRequestParameterMap().get("id").get(0));
         session.close();
     }
 
@@ -87,6 +98,11 @@ public class WebSocket {
     public void onMessage(String message) throws IOException {
         // 往数据库存入消息
         Message sendMessage = JSONObject.parseObject(message, Message.class);
+        if(PONG.equals(sendMessage.getContent())){
+            logger.info("收到心跳请求....");
+            WEB_SOCKET.get(sendMessage.getUserId()).getBasicRemote().sendText("pong");
+            return;
+        }
         if(theMessage.size()>=SIZE){
             // 往数据库里面存入消息
             messageMapper.insertList(theMessage);
@@ -95,7 +111,7 @@ public class WebSocket {
         }
         theMessage.add(sendMessage);
         // 香所有人发送消息
-        for (Map.Entry<String, Session> send : webSocket.entrySet()) {
+        for (Map.Entry<String, Session> send : WEB_SOCKET.entrySet()) {
             if(send.getKey().equals(sendMessage.getUserId())){
                 continue;
             }
