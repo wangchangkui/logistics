@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.myxiaowang.logistics.dao.MessageMapper">
+
+
+    <insert id="insertList">
+        insert into message(userid, content, pic, create_time) VALUES
+        <foreach collection="messageList" separator="," item="message" index="index">
+            (#{message.userId},#{message.content},#{message.pic},#{message.createTime})
+        </foreach>
+    </insert>
+
+    <select id="getMessageByPage" resultType="com.myxiaowang.logistics.pojo.Message">
+        select * from message
+        <where>
+            <choose>
+                <when test="date == null">
+                    DATE_SUB(CURDATE(), INTERVAL 30 DAY) &lt;=  date_format(create_time,"%Y-%m-%d")
+                </when>
+                <otherwise>
+                    create_time BETWEEN date_format(#{date},"%Y-%m-%d")-INTERVAL 30 DAY and  date_format(#{date},"%Y-%m-%d")
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+</mapper>

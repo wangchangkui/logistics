@@ -1,5 +1,9 @@
 package com.myxiaowang.logistics.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.myxiaowang.logistics.pojo.Message;
+import com.myxiaowang.logistics.pojo.QueryDto.QueryDto;
 import com.myxiaowang.logistics.pojo.User;
 import com.myxiaowang.logistics.util.Reslut.ResponseResult;
 import java.util.*;
@@ -10,9 +14,14 @@ import java.util.*;
  * @Description TODO
  * @createTime 2022年02月18日 14:41:00
  */
-public interface WebSocketService {
+public interface WebSocketService extends IService<Message> {
 
-
+    /**
+     * 获取时间内的消息
+     * @param messageQueryDto 请求产出
+     * @return 返回结果
+     */
+    ResponseResult<Page<Message>> getMessageAll(QueryDto<Message,Message> messageQueryDto);
     /**
      * 获取在线用户的信息
      * @return 集合

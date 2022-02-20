@@ -1,15 +1,20 @@
 package com.myxiaowang.logistics.common.WebSocket;
 
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.myxiaowang.logistics.dao.MessageMapper;
+import com.myxiaowang.logistics.pojo.Message;
 import lombok.Data;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,15 +29,26 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component(value = "webSocketByUser")
 @Data
 public class WebSocket {
+    @Autowired
+    private MessageMapper messageMapper;
 
     private static final Logger logger = LoggerFactory.getLogger(WebSocket.class);
     /**
      * 连接缓存
      */
     private static Map<String, Session> webSocket = new ConcurrentHashMap<>(16);
+    public static ArrayList<Message> theMessage=new ArrayList<>(100);
+    private static final int SIZE=100;
 
     private String userId;
     private static final String USERKEY="userId";
+
+    @Scheduled(cron = "${Scheduled.message}")
+    public void insertMessage(){
+        if(theMessage.size()>0){
+            messageMapper.insertList(theMessage);
+        }
+    }
 
 
     public Set<String> getOnlineUserId(){
@@ -69,12 +85,23 @@ public class WebSocket {
      */
     @OnMessage(maxMessageSize = 56666)
     public void onMessage(String message) throws IOException {
-        JSONObject jsonObject = JSONObject.parseObject(message);
-        // 代表要发送的用户 默认携带from
-        String to = jsonObject.getString(USERKEY);
-        if(StringUtils.isNotEmpty(to)){
-            webSocket.get(to).getBasicRemote().sendText(message);
+        // 往数据库存入消息
+        Message sendMessage = JSONObject.parseObject(message, Message.class);
+        if(theMessage.size()>=SIZE){
+            // 往数据库里面存入消息
+            messageMapper.insertList(theMessage);
+            // 清空arrayList
+            theMessage= new ArrayList<>(100);
         }
+        theMessage.add(sendMessage);
+        // 香所有人发送消息
+        for (Map.Entry<String, Session> send : webSocket.entrySet()) {
+            if(send.getKey().equals(sendMessage.getUserId())){
+                continue;
+            }
+            send.getValue().getBasicRemote().sendText(message);
+        }
+
     }
 
     /**
@@ -85,5 +112,4 @@ public class WebSocket {
         error.printStackTrace();
         onClose(session);
     }
-
 }
