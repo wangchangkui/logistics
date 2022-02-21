@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -56,6 +57,7 @@ public class WebSocketServiceImpl extends ServiceImpl<MessageMapper, Message> im
             if(myMessages.size()>0){
                 ArrayList<Message> collect = new ArrayList<>(messageByPage.getRecords());
                 collect.addAll(myMessages);
+                collect = collect.stream().sorted(Comparator.comparing(Message::getCreateTime)).collect(Collectors.toCollection(ArrayList::new));
                 messageByPage.setRecords(collect);
             }
         }
