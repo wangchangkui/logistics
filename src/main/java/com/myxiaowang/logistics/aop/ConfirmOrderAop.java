@@ -78,7 +78,7 @@ public class ConfirmOrderAop {
             // 如果redis不存在数据
             if(Objects.isNull(s)){
                 // 查询数据库
-                Order order1 = orderMapper.selectOne(new QueryWrapper<Order>().eq("orderid", args[1]));
+                Order order1 = orderMapper.selectOne(new QueryWrapper<Order>().eq("orderid", args[1].toString()));
                 if(Objects.nonNull(order1)){
                     order=order1;
                     jedis.set(args[1].toString(),JSON.toJSONString(order));
@@ -119,7 +119,7 @@ public class ConfirmOrderAop {
             if(Objects.nonNull(s)){
                 order = JSON.parseObject(s, Order.class);
             }else{
-                order = orderMapper.selectOne(new QueryWrapper<Order>().eq("orderid", args[1]));
+                order = orderMapper.selectOne(new QueryWrapper<Order>().eq("orderid", args[1].toString()));
             }
             if(Objects.nonNull(order)){
                 Logistics logistics = logisticsMapper.selectOne(new QueryWrapper<Logistics>().eq("userid", args[0].toString()).eq("logisticsid", args[1].toString()));

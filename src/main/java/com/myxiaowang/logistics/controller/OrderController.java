@@ -45,8 +45,8 @@ public class OrderController {
     }
 
     @PostMapping("/getOrder")
-    public ResponseResult<String> getOrder(@RequestParam("orderId") String orderId,@RequestParam("userid") String userId){
-       return orderService.getOrder(orderId,userId);
+    public ResponseResult<String> getOrder(@RequestParam("orderId") String orderId,@RequestParam("userid") String userId,@RequestParam("address") String address){
+       return orderService.getOrder(orderId,userId,address);
     }
 
     @PostMapping("/createOrder")

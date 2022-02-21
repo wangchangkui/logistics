@@ -48,12 +48,15 @@ public interface OrderService extends IService<Order> {
      */
     ResponseResult<String> confirmOrder(String userId,String orderId);
 
+
     /**
-     * 抢订单
-     * @param orderId orderId
-     * @return 抢到的结果
+     * 获取订单
+     * @param orderId 订单id
+     * @param userId 订单用户id
+     * @param address 取货地址
+     * @return 操作
      */
-    ResponseResult<String> getOrder(String orderId,String userId);
+    ResponseResult<String> getOrder(String orderId,String userId,String address);
 
     /**
      * 创建订单

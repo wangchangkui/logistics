@@ -45,4 +45,6 @@ public class Order {
     private String code;
     @TableField(value = "username")
     private String userName;
+    @TableField(value = "goods_address")
+    private String goodsAddress;
 }

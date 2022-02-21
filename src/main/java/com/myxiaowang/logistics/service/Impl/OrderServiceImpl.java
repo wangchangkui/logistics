@@ -139,7 +139,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     @Transactional(rollbackFor = Exception.class)
     @Override
     @MyAop(module = "getOrder")
-    public ResponseResult<String> getOrder(String orderId,String userId) {
+    public ResponseResult<String> getOrder(String orderId,String userId,String address) {
         Order order;
         // AOP那里的时候 订单肯定存在redis内，如果redis不存在 说明没有订单
         try (Jedis jedis = redisPool.getConnection()) {
@@ -153,6 +153,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             Integer temp = order.getVersion();
             order.setVersion(order.getVersion() + 1);
             order.setStatus(Stutas.ORDER.getId());
+            order.setGoodsAddress(address);
             // 乐观锁 在传入之前我需要先保证这个没有被修改果
             int update = orderMapper.update(order, new QueryWrapper<Order>().eq("orderid", orderId).eq("version", temp));
             if (update < 1) {
