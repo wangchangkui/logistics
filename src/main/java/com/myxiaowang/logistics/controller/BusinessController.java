@@ -1,15 +1,12 @@
 package com.myxiaowang.logistics.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.myxiaowang.logistics.pojo.Business;
+import com.myxiaowang.logistics.pojo.QueryDto.QueryDto;
 import com.myxiaowang.logistics.service.BusinessService;
 import com.myxiaowang.logistics.util.Reslut.ResponseResult;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author wck
@@ -29,9 +26,9 @@ public class BusinessController {
         return businessService.getBusinessById(businessId);
     }
 
-    @GetMapping("/businessList")
-    public ResponseResult<List<Business>> getBusinessList(){
-        return businessService.getBusinessList();
+    @PostMapping("/businessList")
+    public ResponseResult<Page<Business>> getBusinessList(@RequestBody QueryDto<Business,Business> queryDto){
+        return businessService.getBusinessList(queryDto);
     }
 
 }

@@ -21,9 +21,9 @@ import java.util.Date;
 public class Order {
     @TableId(value = "id",type = IdType.AUTO)
     private Integer id;
-    @TableField(value = "userid")
+    @TableField(value = "user_id")
     private String userId;
-    @TableField(value = "goodsName")
+    @TableField(value = "goods_name")
     private String goodsName;
     @TableField(value = "create_time",fill = FieldFill.INSERT)
     private Date createTime;

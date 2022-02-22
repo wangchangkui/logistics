@@ -1,9 +1,10 @@
 package com.myxiaowang.logistics.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.myxiaowang.logistics.pojo.Business;
+import com.myxiaowang.logistics.pojo.QueryDto.QueryDto;
 import com.myxiaowang.logistics.util.Reslut.ResponseResult;
-import java.util.*;
 
 /**
  * @author wck
@@ -24,5 +25,5 @@ public interface BusinessService extends IService<Business> {
      * 获取所有的商业用户
      * @return 返回集合
      */
-    ResponseResult<List<Business>> getBusinessList();
+    ResponseResult<Page<Business>> getBusinessList(QueryDto<Business,Business> queryDto);
 }
