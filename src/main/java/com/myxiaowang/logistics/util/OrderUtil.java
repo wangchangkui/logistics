@@ -31,18 +31,18 @@ public class OrderUtil {
         stringQueryWrapperHashMap.put("e",new QueryWrapper<Order>().eq("status",1).orderByDesc("money"));
         SELECT.add(stringQueryWrapperHashMap);
         stringQueryWrapperHashMap=new HashMap<>(8);
-        stringQueryWrapperHashMap.put("a",new QueryWrapper<Order>().eq("status",1).eq("goodsName","取快递"));
-        stringQueryWrapperHashMap.put("b",new QueryWrapper<Order>().eq("status",1).eq("goodsName","取快递").orderByDesc("create_time"));
-        stringQueryWrapperHashMap.put("c",new QueryWrapper<Order>().eq("status",1).eq("goodsName","取快递").orderByAsc("money"));
-        stringQueryWrapperHashMap.put("d",new QueryWrapper<Order>().eq("status",1).eq("goodsName","取快递").orderByAsc("create_time"));
-        stringQueryWrapperHashMap.put("e",new QueryWrapper<Order>().eq("status",1).eq("goodsName","取快递").orderByDesc("money"));
+        stringQueryWrapperHashMap.put("a",new QueryWrapper<Order>().eq("status",1).eq("goods_name","取快递"));
+        stringQueryWrapperHashMap.put("b",new QueryWrapper<Order>().eq("status",1).eq("goods_name","取快递").orderByDesc("create_time"));
+        stringQueryWrapperHashMap.put("c",new QueryWrapper<Order>().eq("status",1).eq("goods_name","取快递").orderByAsc("money"));
+        stringQueryWrapperHashMap.put("d",new QueryWrapper<Order>().eq("status",1).eq("goods_name","取快递").orderByAsc("create_time"));
+        stringQueryWrapperHashMap.put("e",new QueryWrapper<Order>().eq("status",1).eq("goods_name","取快递").orderByDesc("money"));
         SELECT.add(stringQueryWrapperHashMap);
         stringQueryWrapperHashMap=new HashMap<>(8);
-        stringQueryWrapperHashMap.put("a",new QueryWrapper<Order>().eq("status",1).eq("goodsName","打印"));
-        stringQueryWrapperHashMap.put("b",new QueryWrapper<Order>().eq("status",1).eq("goodsName","打印").orderByDesc("create_time"));
-        stringQueryWrapperHashMap.put("c",new QueryWrapper<Order>().eq("status",1).eq("goodsName","打印").orderByAsc("money"));
-        stringQueryWrapperHashMap.put("d",new QueryWrapper<Order>().eq("status",1).eq("goodsName","打印").orderByAsc("create_time"));
-        stringQueryWrapperHashMap.put("e",new QueryWrapper<Order>().eq("status",1).eq("goodsName","打印").orderByDesc("money"));
+        stringQueryWrapperHashMap.put("a",new QueryWrapper<Order>().eq("status",1).eq("goods_name","打印"));
+        stringQueryWrapperHashMap.put("b",new QueryWrapper<Order>().eq("status",1).eq("goods_name","打印").orderByDesc("create_time"));
+        stringQueryWrapperHashMap.put("c",new QueryWrapper<Order>().eq("status",1).eq("goods_name","打印").orderByAsc("money"));
+        stringQueryWrapperHashMap.put("d",new QueryWrapper<Order>().eq("status",1).eq("goods_name","打印").orderByAsc("create_time"));
+        stringQueryWrapperHashMap.put("e",new QueryWrapper<Order>().eq("status",1).eq("goods_name","打印").orderByDesc("money"));
         SELECT.add(stringQueryWrapperHashMap);
     }
 
