@@ -50,4 +50,6 @@ public class User implements Serializable {
     private BigDecimal famount;
     @TableField(value = "name")
     private String name;
+    @TableField(exist = false)
+    private BigDecimal arre;
 }

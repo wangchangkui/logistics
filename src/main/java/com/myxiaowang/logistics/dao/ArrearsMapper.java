@@ -2,7 +2,10 @@ package com.myxiaowang.logistics.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.myxiaowang.logistics.pojo.Arrears;
+import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.*;
 
 /**
  * @author wck
@@ -12,4 +15,6 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface ArrearsMapper extends BaseMapper<Arrears> {
+    @MapKey("id")
+    List<Map<String,Object>> getArrearsMap(String userId);
 }

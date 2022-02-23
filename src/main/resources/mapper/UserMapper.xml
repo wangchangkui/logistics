@@ -5,7 +5,10 @@
 <mapper namespace="com.myxiaowang.logistics.dao.UserMapper">
 
     <select id="getUser" resultType="com.myxiaowang.logistics.pojo.User">
-        select user.id,user.idcard,user.password,user.money as decimals,user.header_img as headerImage,user.grande as sex,user.phone,user.create_time,user.update_time,user.username,user.userid
-             ,address.address from user left join address on user.userid=address.userid where address.isCheck=1 and user.userid=#{openId}
+        select s1.*,s2.arre from
+            (select user.id,user.idcard,user.password,user.money as decimals,user.header_img as headerImage,user.grande as sex,user.phone,user.create_time,user.update_time,user.username,user.userid ,address.address from user left join address on user.userid=address.userid where address.isCheck=1 and user.userid=#{openId} )
+                as s1 LEFT JOIN
+            (select sum(arrears.money) as arre,arrears.userid as arrears from arrears where arrears.userid=#{openId})
+                as s2 on s1.userid = s2.arrears
     </select>
 </mapper>

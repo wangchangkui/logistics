@@ -1,17 +1,15 @@
 package com.myxiaowang.logistics.service.Impl;
 
 import cn.hutool.core.util.IdUtil;
-import cn.hutool.crypto.digest.MD5;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
-import com.baomidou.mybatisplus.extension.api.R;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.google.gson.JsonObject;
 import com.myxiaowang.logistics.common.RabbitMq.Produce;
 import com.myxiaowang.logistics.config.PropertiesConfig;
 import com.myxiaowang.logistics.dao.AddressMapper;
+import com.myxiaowang.logistics.dao.ArrearsMapper;
 import com.myxiaowang.logistics.dao.UserMapper;
 import com.myxiaowang.logistics.pojo.Address;
 import com.myxiaowang.logistics.pojo.User;
@@ -24,13 +22,11 @@ import com.myxiaowang.logistics.util.OSS.OssUtil;
 import com.myxiaowang.logistics.util.RedisUtil.RedisPool;
 import com.myxiaowang.logistics.util.Reslut.ResponseResult;
 import com.myxiaowang.logistics.util.Reslut.ResultInfo;
-import io.jsonwebtoken.lang.Strings;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.codec.digest.Md5Crypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.params.SetParams;
@@ -38,10 +34,7 @@ import redis.clients.jedis.params.SetParams;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -60,6 +53,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Autowired
     private OssUtil ossUtil;
+
+    @Autowired
+    private ArrearsMapper arrearsMapper;
 
     @Autowired
     private RedisPool redisPool;
@@ -84,6 +80,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private String filePath;
     @Value("${filePath.osspath}")
     private String ossPath;
+
+    @Override
+    public ResponseResult<List<Map<String, Object>>> getArreInfo(String userId) {
+      return  ResponseResult.success( arrearsMapper.getArrearsMap(userId) );
+    }
 
     @Override
     public ResponseResult<User> getUserInfo(String userId) {

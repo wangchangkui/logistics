@@ -18,6 +18,13 @@ import java.util.*;
 public interface UserService extends IService<User> {
 
     /**
+     * 获取欠费余额原因
+     * @param userId 被欠费用户id
+     * @return map
+     */
+    ResponseResult<List<Map<String, Object>>> getArreInfo(String userId);
+
+    /**
      * 根据userId获取用户的数据
      * @param userId userId
      * @return 返回结果
@@ -28,7 +35,7 @@ public interface UserService extends IService<User> {
      * 根据账号密码登录
      * @param username 用户名
      * @param password 密码
-     * @return
+     * @return 操作
      */
     ResponseResult<User> passWordLogin(String username,String password);
 

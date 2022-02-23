@@ -10,8 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.sql.ResultSet;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author wck
@@ -26,6 +26,10 @@ public class UserController {
     private UserService userService;
 
 
+    @GetMapping("/arreInfo/{openId}")
+    public ResponseResult<List<Map<String, Object>>> getArreInfo(@PathVariable("openId") String openId){
+        return userService.getArreInfo(openId);
+    }
 
     @LoginAop(login = "pass")
     @PostMapping("/passwdByUser")
@@ -98,7 +102,6 @@ public class UserController {
     public ResponseResult<Address> getAddress(@PathVariable("openId") String openId){
         return userService.getUserAddress(openId);
     }
-
 
     /**
      * 这个接口需要做幂等处理
