@@ -2,10 +2,7 @@ package com.myxiaowang.logistics.common.RabbitMq;
 
 import com.myxiaowang.logistics.config.PropertiesConfig;
 import lombok.AllArgsConstructor;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.DirectExchange;
-import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +22,11 @@ public class TtlQueue {
 
     @Autowired
     private PropertiesConfig propertiesConfig;
+
+    @Bean
+    public FanoutExchange fanoutExchange(){
+        return new FanoutExchange("fanout_order_exchange",true,false);
+    }
 
     /**
      * 延迟交换机
@@ -59,6 +61,11 @@ public class TtlQueue {
         return new Queue("ttl.direct.queue",true,false,false,queue);
     }
 
+    @Bean
+    public Queue myQueue1(){
+        return new Queue("order",true);
+    }
+
     /**
      * 死信队列配置
      * @return Queue
@@ -85,17 +92,27 @@ public class TtlQueue {
      * @return Binding
      */
     @Bean
+    @Autowired
     public Binding myBinding1(Queue directQueue, DirectExchange myTtlExchange){
         return BindingBuilder.bind(directQueue).to(myTtlExchange).with(propertiesConfig.getRoute_key());
     }
 
     @Bean
+    @Autowired
     public Binding myBinding2(Queue messageQueue, DirectExchange myTtlExchange){
         return BindingBuilder.bind(messageQueue).to(myTtlExchange).with("ttl-message");
     }
 
     @Bean
+    @Autowired
     public Binding deadBinding(Queue deadQueue,DirectExchange deadLetterExchange){
         return BindingBuilder.bind(deadQueue).to(deadLetterExchange).with("dead");
     }
+
+    @Bean
+    @Autowired
+    public Binding myBindingFanout(Queue myQueue1,FanoutExchange fanoutExchange){
+        return BindingBuilder.bind(myQueue1).to(fanoutExchange);
+    }
+
 }

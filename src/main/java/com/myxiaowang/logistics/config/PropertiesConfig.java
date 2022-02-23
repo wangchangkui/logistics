@@ -14,6 +14,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @Data
 public class PropertiesConfig {
+    @Value("${filePath.path}")
+    private String filePath;
     @Value("${aliyun.END_POINT}")
     private String END_POINT;
     @Value("${aliyun.ACCESS_KEY_ID}")
@@ -50,5 +52,7 @@ public class PropertiesConfig {
     private String authUrl;
     @Value("${securitySalt}")
     private String salt;
+    @Value("${aliyun.ALIURL}")
+    private String aliUrl;
 
 }

@@ -65,4 +65,9 @@ public class Produce {
         rabbitTemplate.convertAndSend(propertiesConfig.getExchange(), propertiesConfig.getRoute_key(),message);
     }
 
+    public void sendMessage(String exChange,String message){
+        rabbitTemplate.setExchange(exChange);
+        rabbitTemplate.convertAndSend(message);
+    }
+
 }

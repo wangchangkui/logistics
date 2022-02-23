@@ -1,7 +1,6 @@
-package com.myxiaowang.logistics.pojo;
+package com.myxiaowang.logistics.util.Enum;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 /**
  * @author wck

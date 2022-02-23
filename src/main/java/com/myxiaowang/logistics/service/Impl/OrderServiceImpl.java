@@ -4,22 +4,20 @@ import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.api.R;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.myxiaowang.logistics.dao.*;
 import com.myxiaowang.logistics.pojo.*;
 import com.myxiaowang.logistics.service.OrderService;
 import com.myxiaowang.logistics.util.Annotation.MyAop;
+import com.myxiaowang.logistics.util.Enum.Stutas;
 import com.myxiaowang.logistics.util.OrderUtil;
 import com.myxiaowang.logistics.util.RedisUtil.RedisPool;
 import com.myxiaowang.logistics.util.Reslut.ResponseResult;
 import com.myxiaowang.logistics.util.Reslut.ResultInfo;
-import lombok.val;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
@@ -27,7 +25,6 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.params.SetParams;
 
 import java.math.BigDecimal;
-import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -107,7 +104,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         Integer version = user.getVersion();
         Integer version2 = user2.getVersion();
         // 存在用户钱不够扣的情况，提交数据 并且进入冻结金额
-        if (user2.getDecimals().compareTo(order.getMoney())<1) {
+        if (user2.getDecimals().compareTo(order.getMoney())<0) {
             Arrears arrears = new Arrears();
             arrears.setOrderId(orderId);
             arrears.setMoney(order.getMoney());

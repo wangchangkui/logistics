@@ -33,4 +33,12 @@ public class DeadListener {
             jedis.del(message);
         }
     }
+
+    @RabbitHandler
+    @RabbitListener(queues = {"order"})
+    public void orderReceive(String message){
+        try(Jedis jedis=redisPool.getConnection()){
+            log.info(message);
+        }
+    }
 }

@@ -1,8 +1,10 @@
 package com.myxiaowang.logistics.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.myxiaowang.logistics.pojo.Tx;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * @author wck
@@ -12,4 +14,5 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface TxMapper extends BaseMapper<Tx> {
+    Page<Tx> getUserTx(@Param("page") Page<Tx> txPage,@Param("userId") String userId);
 }

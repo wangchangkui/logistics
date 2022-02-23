@@ -30,8 +30,29 @@
         <tx_dx_version>4.0.11</tx_dx_version>
         <okhttp_version>4.9.3</okhttp_version>
         <websocket-version>1.5.2</websocket-version>
+        <qrCode>3.4.1</qrCode>
+        <zfb>2.2.1</zfb>
+        <zfb-common>4.22.10.ALL</zfb-common>
     </properties>
     <dependencies>
+
+        <dependency>
+            <groupId>com.alipay.sdk</groupId>
+            <artifactId>alipay-easysdk</artifactId>
+            <version>${zfb}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alipay.sdk</groupId>
+            <artifactId>alipay-sdk-java</artifactId>
+            <version>${zfb-common}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+            <version>${qrCode}</version>
+        </dependency>
 
 
         <dependency>

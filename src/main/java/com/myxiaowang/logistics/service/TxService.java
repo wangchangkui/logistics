@@ -1,6 +1,8 @@
 package com.myxiaowang.logistics.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.myxiaowang.logistics.pojo.QueryDto.QueryDto;
 import com.myxiaowang.logistics.pojo.Tx;
 import com.myxiaowang.logistics.util.Reslut.ResponseResult;
 
@@ -17,4 +19,12 @@ public interface TxService extends IService<Tx> {
      * @return 返回今儿个
      */
     ResponseResult<String> insertTx(Tx tx);
+
+    /**
+     * 提现查询接口
+     *
+     * @param queryDto
+     * @return
+     */
+    IPage<Tx> getTxPage(QueryDto<Tx,Tx> queryDto);
 }

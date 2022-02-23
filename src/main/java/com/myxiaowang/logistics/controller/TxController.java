@@ -1,5 +1,8 @@
 package com.myxiaowang.logistics.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.myxiaowang.logistics.pojo.QueryDto.QueryDto;
 import com.myxiaowang.logistics.pojo.Tx;
 import com.myxiaowang.logistics.service.TxService;
 import com.myxiaowang.logistics.util.Reslut.ResponseResult;
@@ -17,8 +20,15 @@ import org.springframework.web.bind.annotation.*;
 public class TxController {
     @Autowired
     private TxService txService;
+
+
     @PostMapping("/insertTx")
     public ResponseResult<String> insertTx(@RequestBody Tx tx){
         return txService.insertTx(tx);
+    }
+
+    @PostMapping("/selectTx")
+    public IPage<Tx> getPageTx(QueryDto<Tx,Tx> queryDto){
+        return txService.getTxPage(queryDto);
     }
 }
