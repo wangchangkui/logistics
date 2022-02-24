@@ -1,5 +1,6 @@
 package com.myxiaowang.logistics.service;
 
+import com.alipay.api.AlipayApiException;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.myxiaowang.logistics.pojo.PayOrder;
 import com.myxiaowang.logistics.util.Reslut.ResponseResult;
@@ -18,7 +19,7 @@ public interface PayOrderService extends IService<PayOrder> {
     /**
      * 获取所有的用户支付记录
      * @param userId 用户id'
-     * @return
+     * @return 集合
      */
     ResponseResult<List<PayOrder>> getUserOrder(String userId);
 
@@ -27,17 +28,19 @@ public interface PayOrderService extends IService<PayOrder> {
      * @param orderId 订单Id
      * @return 订单的清空
      */
-    ResponseResult<Integer> orderStatus(String orderId);
+    ResponseResult<String> orderStatus(String orderId);
     /**
      * 支付成功截图
-     * @param userId 返回结果
+     * @param userId userId
+     * @param orderId orderId
      * @return 操作结果
      */
-    ResponseResult<String> sucPay(String userId,String orderId);
+    ResponseResult<String> sucPay(String userId,String orderId) throws AlipayApiException;
 
     /**
      * 如果到期没有支付订单
-     * @param userId 用户Id
+     * @param userId userId
+     * @param orderId orderId
      * @return 返回结果
      */
     ResponseResult<String> notPayOrder(String userId,String orderId);
@@ -54,5 +57,5 @@ public interface PayOrderService extends IService<PayOrder> {
      * @param payOrder 支付参数
      * @return 返回结果
      */
-    ResponseResult<String> onlinePay(PayOrder payOrder);
+    ResponseResult<HashMap<String, String>> onlinePay(PayOrder payOrder);
 }

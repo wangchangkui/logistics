@@ -14,6 +14,7 @@ import com.alipay.api.response.AlipayTradePrecreateResponse;
 import com.alipay.api.response.AlipayTradeQueryResponse;
 import com.alipay.api.response.AlipayTradeRefundResponse;
 import com.myxiaowang.logistics.config.PropertiesConfig;
+import com.myxiaowang.logistics.util.Enum.PayStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,7 +63,7 @@ public class CommonAlipay {
         alipayTradePrecreateRequest.setBizContent(jsonObject.toString());
         // 发起请求
         AlipayTradePrecreateResponse response = defaultAlipayClient.execute(alipayTradePrecreateRequest);
-
+        logger.info(response.getBody());
         // 订单创建结果
         if (response.isSuccess()) {
             return response.getQrCode();
@@ -73,64 +74,52 @@ public class CommonAlipay {
     /**
      * 获取订单交易情况
      *
-     * @param out_trade_no 订单号
+     * @param outTradeNo 订单号
      * @return -1 1 2 3 4
      * @throws AlipayApiException 阿里接口异常
      */
-    public int hasOverOrder(String out_trade_no) throws AlipayApiException {
+    public String hasOverOrder(String outTradeNo) throws AlipayApiException {
         if (defaultAlipayClient == null) {
             getDefaultAlipayClient();
         }
         AlipayTradeQueryRequest request = new AlipayTradeQueryRequest();
         JSONObject bizContent = new JSONObject();
         try {
-            bizContent.put("out_trade_no", out_trade_no);
+            bizContent.put("out_trade_no", outTradeNo);
         } catch (JSONException e) {
             logger.error(e.getMessage());
-            return -1;
+            return "";
         }
         request.setBizContent(bizContent.toString());
         AlipayTradeQueryResponse response = defaultAlipayClient.execute(request);
         // 查询成功怎么处理
         if (response.isSuccess()) {
-            switch (response.getTradeStatus()) {
-                case "WAIT_BUYER_PAY":
-                    return 1;
-                case "TRADE_CLOSED":
-                    return 2;
-                case "TRADE_SUCCESS":
-                    return 3;
-                case "TRADE_FINISHED":
-                    return 4;
-                default:
-                    logger.error("参数出现了错误");
-                    return -1;
-            }
+           return PayStatus.payInfo(response.getTradeStatus());
         }
         logger.error("订单查询失败，请检查:"+response.getSubMsg());
-        return -1;
+        return "";
     }
 
     /**
      * 支付宝退款
-     * @param trade_no 支付宝订单id
+     * @param outTradeNo 支付宝订单id
      * @param money 退款金额
-     * @param refund_reason 退款原有
+     * @param refundReason 退款原有
      * @return 退款code
      * @throws AlipayApiException 支付宝接口错误信息
      */
-    public int reFunRequest(String out_trade_no,String trade_no, String money, String refund_reason,String out_request_no) throws AlipayApiException {
+    public int reFunRequest(String outTradeNo, String tradeNo, String money, String refundReason, String outRequestNo) throws AlipayApiException {
         if(defaultAlipayClient==null){
             getDefaultAlipayClient();
         }
         AlipayTradeRefundRequest request = new AlipayTradeRefundRequest();
         JSONObject bizContent = new JSONObject();
         try {
-            bizContent.put("trade_no",trade_no);
-            bizContent.put("out_trade_no",out_trade_no);
+            bizContent.put("trade_no",tradeNo);
+            bizContent.put("out_trade_no",outTradeNo);
             bizContent.put("refund_amount",money);
-            bizContent.put("refund_reason",refund_reason);
-            bizContent.put("out_request_no",out_request_no);
+            bizContent.put("refund_reason",refundReason);
+            bizContent.put("out_request_no",outRequestNo);
         } catch (JSONException e) {
             logger.error(e.getMessage());
             return -1;
@@ -146,20 +135,20 @@ public class CommonAlipay {
 
     /**
      * 退款接口查询
-     * @param out_trade_no 订单id
-     * @param out_request_no 退款订单号
+     * @param outTradeNo 订单id
+     * @param outRequestNo 退款订单号
      * @return 退款结果
      * @throws JSONException json异常
      * @throws AlipayApiException 阿里接口异常
      */
-    public int hasReFund(String out_trade_no,String out_request_no) throws JSONException, AlipayApiException {
+    public int hasReFund(String outTradeNo, String outRequestNo) throws JSONException, AlipayApiException {
         if(defaultAlipayClient==null){
             getDefaultAlipayClient();
         }
         AlipayTradeFastpayRefundQueryRequest request = new AlipayTradeFastpayRefundQueryRequest();
         JSONObject bizContent = new JSONObject();
-        bizContent.put("out_trade_no",out_trade_no);
-        bizContent.put("out_request_no",out_request_no);
+        bizContent.put("out_trade_no",outTradeNo);
+        bizContent.put("out_request_no",outRequestNo);
         request.setBizContent(bizContent.toString());
         AlipayTradeFastpayRefundQueryResponse response = defaultAlipayClient.execute(request);
         if(response.isSuccess()){

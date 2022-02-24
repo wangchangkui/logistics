@@ -39,4 +39,6 @@ public class PayOrder {
     private String phone;
     @TableField(value = "status")
     private Integer status;
+    @TableField(exist = false)
+    private String image;
 }

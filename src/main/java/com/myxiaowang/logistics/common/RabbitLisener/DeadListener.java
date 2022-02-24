@@ -1,5 +1,8 @@
 package com.myxiaowang.logistics.common.RabbitLisener;
 
+import com.alibaba.fastjson.JSON;
+import com.myxiaowang.logistics.dao.PayOrderMapper;
+import com.myxiaowang.logistics.pojo.PayOrder;
 import com.myxiaowang.logistics.util.RedisUtil.RedisPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +28,9 @@ public class DeadListener {
     @Autowired
     private RedisPool redisPool;
 
+    @Autowired
+    private PayOrderMapper payOrderMapper;
+
     @RabbitHandler
     @RabbitListener(queues = {"dead_ttl.direct.queue"})
     public void receive(String message){
@@ -37,8 +43,7 @@ public class DeadListener {
     @RabbitHandler
     @RabbitListener(queues = {"order"})
     public void orderReceive(String message){
-        try(Jedis jedis=redisPool.getConnection()){
-            log.info(message);
-        }
+        PayOrder payOrder = JSON.parseObject(message, PayOrder.class);
+        payOrderMapper.insert(payOrder);
     }
 }

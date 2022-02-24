@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.sql.Timestamp;
+
 /**
  * @author wck
  * @version 1.0.0
@@ -27,4 +29,6 @@ public class Log {
     private String args;
     @TableField("request_class")
     private String requestClass;
+    @TableField("time")
+    private Timestamp time;
 }
