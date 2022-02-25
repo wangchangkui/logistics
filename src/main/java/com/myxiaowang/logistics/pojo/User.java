@@ -28,7 +28,7 @@ public class User implements Serializable {
     private String password;
     @TableField(value = "phone")
     private String phone;
-    @TableField(value = "userid")
+    @TableField(value = "user_id")
     private String userid;
     @TableField(value = "create_time",fill = FieldFill.INSERT)
     private Date createTime;

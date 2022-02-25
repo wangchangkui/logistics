@@ -18,11 +18,11 @@ import lombok.NoArgsConstructor;
 public class Address {
     @TableId(value = "id",type = IdType.AUTO)
     private Integer id;
-    @TableField(value = "userid")
+    @TableField(value = "user_id")
     private String userId;
     @TableField(value = "address")
     private String address;
-    @TableField(value = "isCheck")
+    @TableField(value = "is_check")
     private Integer isCheck;
     @TableField(value = "username")
     private String username;

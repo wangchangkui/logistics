@@ -22,7 +22,7 @@ import java.util.Date;
 public class Message {
     @TableId(value = "id",type = IdType.AUTO)
     private String id;
-    @TableField("userId")
+    @TableField("user_id")
     private String userId;
     @TableField("content")
     private String content;
@@ -31,6 +31,6 @@ public class Message {
     private Timestamp createTime;
     @TableField("pic")
     private String pic;
-    @TableField("nickName")
+    @TableField("nick_name")
     private String nickName;
 }

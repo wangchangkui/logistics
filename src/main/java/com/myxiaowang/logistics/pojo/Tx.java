@@ -21,7 +21,7 @@ import java.sql.Timestamp;
 public class Tx {
     @TableId(value = "id",type = IdType.AUTO)
     private Integer id;
-    @TableField("userid")
+    @TableField("user_id")
     private String userId;
     @TableField("money")
     private BigDecimal money;

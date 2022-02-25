@@ -31,7 +31,7 @@ public class Order {
     private Integer status;
     @TableField(value = "money")
     private BigDecimal money;
-    @TableField(value = "orderid")
+    @TableField(value = "order_id")
     private String orderId;
     @TableField(value = "version")
     private Integer version;

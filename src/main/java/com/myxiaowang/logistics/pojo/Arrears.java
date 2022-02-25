@@ -21,18 +21,18 @@ import java.util.Date;
 public class Arrears {
     @TableId(value = "id" ,type = IdType.AUTO)
     private Integer id;
-    @TableField(value = "userid")
+    @TableField(value = "user_id")
     private String userId;
     @TableField(value = "money")
     private BigDecimal money;
-    @TableField(value = "goodsname")
+    @TableField(value = "goods_name")
     private String goodsName;
-    @TableField(value = "orderid")
+    @TableField(value = "order_id")
     private String orderId;
     @TableField(value = "username")
     private String username;
     @TableField(value = "create_time",fill = FieldFill.INSERT)
     private Date createTime;
-    @TableField(value = "arruserid")
+    @TableField(value = "arruser_id")
     private String arrUserid;
 }

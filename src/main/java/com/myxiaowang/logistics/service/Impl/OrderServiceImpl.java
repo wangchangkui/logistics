@@ -138,8 +138,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             user2.setDecimals(bigDecimal2.subtract(order.getMoney()));
             user2.setVersion(version2 + 1);
             // 更新数据
-            int update1 = userMapper.update(user, new QueryWrapper<User>().eq("userid", user.getUserid()).eq("money", bigDecimal).eq("version", version));
-            int update2 = userMapper.update(user2, new QueryWrapper<User>().eq("userid", user2.getUserid()).eq("money", bigDecimal2).eq("version", version));
+            int update1 = userMapper.update(user, new QueryWrapper<User>().eq("user_id", user.getUserid()).eq("money", bigDecimal).eq("version", version));
+            int update2 = userMapper.update(user2, new QueryWrapper<User>().eq("user_id", user2.getUserid()).eq("money", bigDecimal2).eq("version", version));
             // 需要保证2条数据能正常返回
             if (update1 < 1 || update2 < 1) {
                 throw new RuntimeException("数据不正确");
@@ -201,7 +201,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ResponseResult<String> cancelOrder(String userId, String orderId) {
-        Order order = getOne(new QueryWrapper<Order>().eq("userid", userId).eq("orderid", orderId));
+        // 取消订单之前 需要线查询一下订单
+        Order order = getOne(new QueryWrapper<Order>().eq("user_id", userId).eq("order_id", orderId));
         if (Objects.isNull(order)) {
             ResponseResult.error(ResultInfo.NO_RESULT);
         }
@@ -209,6 +210,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         if (Stutas.hasStutasWithWait(order.getStatus())) {
             order.setStatus(Stutas.CANCEL.getId());
             order.setOverTime(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
+            orderMapper.updateById(order);
             return ResponseResult.success("订单取消成功");
         }
         return ResponseResult.error(400, "订单已经" + Stutas.getStatus(order.getStatus()));

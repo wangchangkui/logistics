@@ -3,6 +3,7 @@ package com.myxiaowang.logistics.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.myxiaowang.logistics.pojo.Logistics;
 import com.myxiaowang.logistics.pojo.Order;
+import com.myxiaowang.logistics.pojo.QueryDto.PayOrderQuery;
 import com.myxiaowang.logistics.service.OrderService;
 import com.myxiaowang.logistics.util.Reslut.ResponseResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,12 @@ import java.util.List;
 public class OrderController {
     @Autowired
     private OrderService orderService;
+
+
+    @PostMapping("/cancelOrder")
+    public ResponseResult<String> cancelOrder(@RequestBody PayOrderQuery payOrderQuery){
+        return orderService.cancelOrder(payOrderQuery.getUserId(), payOrderQuery.getOrderId());
+    }
 
 
     @PostMapping("/conditionByUser")

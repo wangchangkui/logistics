@@ -21,9 +21,9 @@ import java.util.Date;
 public class Logistics {
     @TableId(value = "id",type = IdType.AUTO)
     private Integer id;
-    @TableField(value = "userId",insertStrategy = FieldStrategy.NOT_EMPTY,updateStrategy = FieldStrategy.NOT_EMPTY,whereStrategy = FieldStrategy.NOT_EMPTY)
+    @TableField(value = "user_id",insertStrategy = FieldStrategy.NOT_EMPTY,updateStrategy = FieldStrategy.NOT_EMPTY,whereStrategy = FieldStrategy.NOT_EMPTY)
     private String userId;
-    @TableField(value = "logisticsid",insertStrategy = FieldStrategy.NOT_EMPTY,updateStrategy = FieldStrategy.NOT_EMPTY,whereStrategy = FieldStrategy.NOT_EMPTY)
+    @TableField(value = "logistics_id",insertStrategy = FieldStrategy.NOT_EMPTY,updateStrategy = FieldStrategy.NOT_EMPTY,whereStrategy = FieldStrategy.NOT_EMPTY)
     private String logistics;
     @TableField(value = "goods",insertStrategy = FieldStrategy.NOT_EMPTY,updateStrategy = FieldStrategy.NOT_EMPTY,whereStrategy = FieldStrategy.NOT_EMPTY)
     private String goods;
@@ -33,7 +33,7 @@ public class Logistics {
     private Date overTime;
     @TableField(value = "money")
     private BigDecimal money;
-    @TableField(value = "getuser")
+    @TableField(value = "get_user")
     private String getUser;
     @TableField(value = "status")
     private Integer status;
