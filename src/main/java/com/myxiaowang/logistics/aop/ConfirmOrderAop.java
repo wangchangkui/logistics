@@ -51,8 +51,6 @@ public class ConfirmOrderAop {
     @Autowired
     private UserMapper userMapper;
 
-    @Autowired
-    private TakePatsMapper takePatsMapper;
 
     @Autowired
     private LogisticsMapper logisticsMapper;
@@ -131,10 +129,6 @@ public class ConfirmOrderAop {
                 order.setStatus(5);
                 order.setOverTime(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
                 orderMapper.updateById(order);
-                // 删除取货码
-                takePatsMapper.delete(new QueryWrapper<TakeParts>().eq("code",order.getCode()).eq("orderid",order.getOrderId()));
-                jedis.del(order.getCode());
-
                 dataSourceTransactionManager.commit(transaction);
                 // 改回默认值
                 status=2;
