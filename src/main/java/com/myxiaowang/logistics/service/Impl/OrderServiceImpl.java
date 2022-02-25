@@ -110,9 +110,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             ResponseResult.error(ResultInfo.NO_RESULT);
         }
         // 当前用户的数据
-        User user = userMapper.selectOne(new QueryWrapper<User>().eq("userid", userId));
+        User user = userMapper.selectOne(new QueryWrapper<User>().eq("user_id", userId));
         // 被扣钱的用户的数据
-        User user2 = userMapper.selectOne(new QueryWrapper<User>().eq("userid", order.getUserId()));
+        User user2 = userMapper.selectOne(new QueryWrapper<User>().eq("user_id", order.getUserId()));
         // 乐观锁的保证
         BigDecimal bigDecimal = user.getDecimals();
         BigDecimal bigDecimal2 = user2.getDecimals();
@@ -167,7 +167,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             order.setStatus(Stutas.ORDER.getId());
             order.setGoodsAddress(address);
             // 乐观锁 在传入之前我需要先保证这个没有被修改果
-            int update = orderMapper.update(order, new QueryWrapper<Order>().eq("orderid", orderId).eq("version", temp));
+            int update = orderMapper.update(order, new QueryWrapper<Order>().eq("order_id", orderId).eq("version", temp));
             if (update < 1) {
                 TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                 throw new RuntimeException("订单被占用");
@@ -183,7 +183,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     @Override
     public ResponseResult<String> createOrder(Order order) {
         // 在创建订单之前，我们需要先判断该用户是否有未缴费的订单记录
-        Integer userCount = arrearsMapper.selectCount(new QueryWrapper<Arrears>().eq("userid", order.getUserId()));
+        Integer userCount = arrearsMapper.selectCount(new QueryWrapper<Arrears>().eq("user_id", order.getUserId()));
         if (userCount > 1) {
             ResultInfo.NO_RESULT.setMessage("该用户存在未缴费的订单");
             return ResponseResult.error(ResultInfo.NO_RESULT);

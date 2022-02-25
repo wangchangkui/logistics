@@ -35,7 +35,7 @@ public class TxServiceImpl extends ServiceImpl<TxMapper, Tx> implements TxServic
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ResponseResult<String> insertTx(Tx tx) {
-        User user = userMapper.selectOne(new QueryWrapper<User>().eq("userid", tx.getUserId()));
+        User user = userMapper.selectOne(new QueryWrapper<User>().eq("user_id", tx.getUserId()));
         BigDecimal decimals = user.getDecimals();
         if(decimals.compareTo(tx.getMoney())<0){
             return ResponseResult.error("金额不足，无法提现");
@@ -44,7 +44,7 @@ public class TxServiceImpl extends ServiceImpl<TxMapper, Tx> implements TxServic
         Integer version = user.getVersion();
         user.setDecimals(subtract);
         user.setVersion(user.getVersion()+1);
-        userMapper.update(user,new QueryWrapper<User>().eq("userid",tx.getUserId()).eq("money",decimals).eq("version",version));
+        userMapper.update(user,new QueryWrapper<User>().eq("user_id",tx.getUserId()).eq("money",decimals).eq("version",version));
         save(tx);
         return ResponseResult.success("操作成功");
     }

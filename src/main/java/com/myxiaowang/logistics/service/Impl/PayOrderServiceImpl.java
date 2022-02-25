@@ -97,14 +97,14 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder> i
                         return ResponseResult.error("未找到订单记录");
                     }
                     PayOrder one = JSON.parseObject(payOrder, PayOrder.class);
-                    User user = userMapper.selectOne(new QueryWrapper<User>().eq("userid", userId));
+                    User user = userMapper.selectOne(new QueryWrapper<User>().eq("user_id", userId));
                     // 当前的金额
                     BigDecimal thisMoney = user.getDecimals();
                     // 版本号 乐观锁
                     Integer version = user.getVersion();
                     user.setDecimals(thisMoney.add(one.getMoney()));
                     user.setVersion(version+1);
-                    userMapper.update(user,new QueryWrapper<User>().eq("userid",userId).eq("money",thisMoney).eq("version",version));
+                    userMapper.update(user,new QueryWrapper<User>().eq("user_id",userId).eq("money",thisMoney).eq("version",version));
                     one.setStatus(2);
                     update(one,new QueryWrapper<PayOrder>().eq("order_id",one.getOrderId()).eq("status",1));
                     ossUtil.getClient().deleteFile(propertiesConfig.getBUKKET_NAME(),orderId+".png");

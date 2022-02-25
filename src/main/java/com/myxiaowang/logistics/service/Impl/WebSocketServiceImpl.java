@@ -70,7 +70,7 @@ public class WebSocketServiceImpl extends ServiceImpl<MessageMapper, Message> im
         if(onlineUserId.isEmpty()){
             return ResponseResult.error("暂时无人上线");
         }
-        return ResponseResult.success(userMapper.selectList(new QueryWrapper<User>().in("userid",onlineUserId)));
+        return ResponseResult.success(userMapper.selectList(new QueryWrapper<User>().in("user_id",onlineUserId)));
     }
 
     @Override

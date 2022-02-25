@@ -182,7 +182,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if(address.getIsCheck()==1){
             Address temp = new Address();
             temp.setIsCheck(0);
-            addressMapper.update(temp,new QueryWrapper<Address>().eq("userId",address.getUserId()));
+            addressMapper.update(temp,new QueryWrapper<Address>().eq("user_id",address.getUserId()));
         }
         if(Objects.isNull(address.getId())){
             addressMapper.insert(address);
@@ -197,7 +197,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public ResponseResult<String> setCheck(String id,String userId) {
         Address address = new Address();
         address.setIsCheck(0);
-        addressMapper.update(address,new QueryWrapper<Address>().eq("userId",userId));
+        addressMapper.update(address,new QueryWrapper<Address>().eq("user_id",userId));
         address.setIsCheck(1);
         addressMapper.update(address,new QueryWrapper<Address>().eq("id",id));
         return ResponseResult.success("更新默认值成功");
@@ -211,7 +211,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public ResponseResult<List<Address>> getUserAddressList(String userId) {
-        List<Address> userId1 = addressMapper.selectList(new QueryWrapper<Address>().eq("userId", userId));
+        List<Address> userId1 = addressMapper.selectList(new QueryWrapper<Address>().eq("user_id", userId));
         return ResponseResult.success(userId1);
     }
 
@@ -286,8 +286,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public ResponseResult<Address> getUserAddress(String openId) {
-        Address address = addressMapper.selectOne(new QueryWrapper<Address>().eq("userid", openId).and(z -> {
-            z.eq("isCheck", 1);
+        Address address = addressMapper.selectOne(new QueryWrapper<Address>().eq("user_id", openId).and(z -> {
+            z.eq("is_check", 1);
         }));
         return ResponseResult.success(address);
     }

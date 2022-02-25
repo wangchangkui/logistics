@@ -116,7 +116,7 @@ public class OrderAspect {
             Order target = null;
             String order = jedis.get(arg);
             if(Objects.isNull(order)){
-               target = orderMapper.selectOne(new QueryWrapper<Order>().eq("orderid", arg));
+               target = orderMapper.selectOne(new QueryWrapper<Order>().eq("order_id", arg));
             }
             else{
                 target=JSON.parseObject(order,Order.class);
@@ -127,7 +127,7 @@ public class OrderAspect {
                     return ResponseResult.error("自己不允许抢自己的订单");
                 }
                 // 判断自己有没有认证
-                User user = userMapper.selectOne(new QueryWrapper<User>().eq("userid", args[1]));
+                User user = userMapper.selectOne(new QueryWrapper<User>().eq("user_id", args[1]));
                 if(StringUtils.isEmpty(user.getIdCard())){
                     return ResponseResult.error("用户未认证");
                 }
@@ -154,6 +154,7 @@ public class OrderAspect {
     @AfterThrowing(value = "cutMethod()",throwing = "exception")
     public void afterError(Throwable exception){
         dataSourceTransactionManager.rollback(transaction);
+        log.error(exception.getMessage());
     }
 
 }

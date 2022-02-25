@@ -76,7 +76,7 @@ public class ConfirmOrderAop {
             // 如果redis不存在数据
             if(Objects.isNull(s)){
                 // 查询数据库
-                Order order1 = orderMapper.selectOne(new QueryWrapper<Order>().eq("orderid", args[1].toString()));
+                Order order1 = orderMapper.selectOne(new QueryWrapper<Order>().eq("order_id", args[1].toString()));
                 if(Objects.nonNull(order1)){
                     order=order1;
                     jedis.set(args[1].toString(),JSON.toJSONString(order));
@@ -86,12 +86,12 @@ public class ConfirmOrderAop {
             }
             // 有且仅有订单存在的时候，才去判断用户钱是否够扣
             if(Objects.nonNull(order)){
-                User user2=userMapper.selectOne(new QueryWrapper<User>().eq("userid",order.getUserId()));
+                User user2=userMapper.selectOne(new QueryWrapper<User>().eq("user_id",order.getUserId()));
                 if (user2.getDecimals().compareTo(order.getMoney())<1) {
                     status=3;
                 }
                 // 当前用户的数据
-                User user = userMapper.selectOne(new QueryWrapper<User>().eq("userid", args[0]));
+                User user = userMapper.selectOne(new QueryWrapper<User>().eq("user_id", args[0]));
                 if(Objects.isNull(user)){
                     return ResponseResult.error("不存在的用户");
                 }
@@ -117,10 +117,10 @@ public class ConfirmOrderAop {
             if(Objects.nonNull(s)){
                 order = JSON.parseObject(s, Order.class);
             }else{
-                order = orderMapper.selectOne(new QueryWrapper<Order>().eq("orderid", args[1].toString()));
+                order = orderMapper.selectOne(new QueryWrapper<Order>().eq("order_id", args[1].toString()));
             }
             if(Objects.nonNull(order)){
-                Logistics logistics = logisticsMapper.selectOne(new QueryWrapper<Logistics>().eq("userid", args[0].toString()).eq("logisticsid", args[1].toString()));
+                Logistics logistics = logisticsMapper.selectOne(new QueryWrapper<Logistics>().eq("user_id", args[0].toString()).eq("logistics_id", args[1].toString()));
                 logistics.setStatus(status);
                 logisticsMapper.updateById(logistics);
                 // 最后删除redis的订单数据
