@@ -1,7 +1,6 @@
 package com.myxiaowang.logistics.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.myxiaowang.logistics.pojo.QueryDto.QueryDto;
 import com.myxiaowang.logistics.pojo.Tx;
 import com.myxiaowang.logistics.service.TxService;
@@ -28,7 +27,7 @@ public class TxController {
     }
 
     @PostMapping("/selectTx")
-    public IPage<Tx> getPageTx(QueryDto<Tx,Tx> queryDto){
+    public IPage<Tx> getPageTx(@RequestBody QueryDto<Tx,Tx> queryDto){
         return txService.getTxPage(queryDto);
     }
 }

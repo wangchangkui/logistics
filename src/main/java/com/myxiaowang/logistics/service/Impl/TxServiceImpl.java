@@ -2,6 +2,7 @@ package com.myxiaowang.logistics.service.Impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.myxiaowang.logistics.dao.TxMapper;
 import com.myxiaowang.logistics.dao.UserMapper;
@@ -14,9 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 /**
  * @author wck
@@ -44,6 +44,7 @@ public class TxServiceImpl extends ServiceImpl<TxMapper, Tx> implements TxServic
         Integer version = user.getVersion();
         user.setDecimals(subtract);
         user.setVersion(user.getVersion()+1);
+        user.setCreateTime(new Timestamp(System.currentTimeMillis()));
         userMapper.update(user,new QueryWrapper<User>().eq("user_id",tx.getUserId()).eq("money",decimals).eq("version",version));
         save(tx);
         return ResponseResult.success("操作成功");
@@ -51,6 +52,6 @@ public class TxServiceImpl extends ServiceImpl<TxMapper, Tx> implements TxServic
 
     @Override
     public IPage<Tx> getTxPage(QueryDto<Tx, Tx> queryDto) {
-        return  txMapper.getUserTx(queryDto.getPage(),queryDto.getEntity().getUserId());
+        return txMapper.getUserTx(queryDto.getPage(), queryDto.getEntity().getUserId());
     }
 }

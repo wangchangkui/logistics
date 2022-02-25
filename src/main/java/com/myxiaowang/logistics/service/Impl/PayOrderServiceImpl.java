@@ -69,7 +69,7 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder> i
 
     @Override
     public ResponseResult<List<PayOrder>> getUserOrder(String userId) {
-        return ResponseResult.success(list(new QueryWrapper<PayOrder>().eq("user_id",userId).eq("status",2)));
+        return ResponseResult.success(list(new QueryWrapper<PayOrder>().eq("user_id",userId).eq("status",2).orderByDesc("create_time")));
     }
 
     @Override
