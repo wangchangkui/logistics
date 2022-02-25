@@ -1,6 +1,5 @@
 package com.myxiaowang.logistics.service.Impl;
 
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.extra.qrcode.QrCodeUtil;
 import com.alibaba.fastjson.JSON;
 import com.alipay.api.AlipayApiException;
@@ -21,7 +20,6 @@ import com.myxiaowang.logistics.util.OSS.OssUtil;
 import com.myxiaowang.logistics.util.RedisUtil.RedisPool;
 import com.myxiaowang.logistics.util.Reslut.ResponseResult;
 import com.myxiaowang.logistics.util.TimeUtil;
-import com.tencentcloudapi.ame.v20190916.models.UseRange;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +35,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author wck
@@ -109,7 +106,7 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder> i
                     user.setVersion(version+1);
                     userMapper.update(user,new QueryWrapper<User>().eq("userid",userId).eq("money",thisMoney).eq("version",version));
                     one.setStatus(2);
-                    updateById(one);
+                    update(one,new QueryWrapper<PayOrder>().eq("order_id",one.getOrderId()).eq("status",1));
                     ossUtil.getClient().deleteFile(propertiesConfig.getBUKKET_NAME(),orderId+".png");
                     jedis.del("pay_order:"+userId);
                 }
