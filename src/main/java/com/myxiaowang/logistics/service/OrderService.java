@@ -15,6 +15,13 @@ import java.util.*;
  */
 public interface OrderService extends IService<Order> {
 
+
+    /**
+     * 获取用户发布的订单
+     * @param userId 用户Id
+     * @return 返回接口
+     */
+    ResponseResult<List<Order>> getOrderByUser(String userId);
     /**
      * 根据type类型 返回用户抢到的订单
      * @param userId 用户id
@@ -23,6 +30,15 @@ public interface OrderService extends IService<Order> {
      */
     ResponseResult<List<Logistics>> getOrderByUser(String userId, int type);
 
+
+    /**
+     * 根据条件分类获取
+     * @param v1 订单类型
+     * @param con 条件
+     * @param userId 条件
+     * @return 集合
+     */
+    ResponseResult<List<Order>> getOrdersByCond(int v1,String con,String userId);
     /**
      * 根据条件分类获取
      * @param v1 订单类型

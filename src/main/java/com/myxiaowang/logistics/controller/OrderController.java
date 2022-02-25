@@ -23,6 +23,17 @@ public class OrderController {
     private OrderService orderService;
 
 
+    @PostMapping("/conditionByUser")
+    public ResponseResult<List<Order>> getOrderByCondByUser(@RequestParam("v1") int v1, @RequestParam("v2") String v2,@RequestParam("userId") String userId){
+        return orderService.getOrdersByCond(v1,v2,userId);
+    }
+
+    @GetMapping("/getOrderUser/{userid}")
+    public ResponseResult<List<Order>> getOrderByUser(@PathVariable String userid){
+        return orderService.getOrderByUser(userid);
+    }
+
+
     @PostMapping("/getUserOrder")
     public ResponseResult<List<Logistics>> getOrderByUser(@RequestParam("userId")String userId, @RequestParam("type")int type){
         return orderService.getOrderByUser(userId,type);

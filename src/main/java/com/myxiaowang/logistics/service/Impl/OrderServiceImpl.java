@@ -54,15 +54,34 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
 
     @Override
+    public ResponseResult<List<Order>> getOrderByUser(String userId) {
+        return ResponseResult.success( list(new QueryWrapper<Order>().eq("user_id",userId).orderByDesc("create_time")) );
+    }
+
+    @Override
     public ResponseResult<List<Logistics>> getOrderByUser(String userId, int type) {
         return ResponseResult.success(logisticsMapper.getUserLogistics(userId, type));
+    }
+
+    @Override
+    public ResponseResult<List<Order>> getOrdersByCond(int v1, String con, String userId) {
+        System.out.println(v1);
+        QueryWrapper<Order> select;
+        try {
+            select = OrderUtil.getSelect(v1, con,userId);
+        } catch (RuntimeException e) {
+            logger.error(e.getMessage());
+            return null;
+        }
+        List<Order> list = list(select);
+        return ResponseResult.success(list);
     }
 
     @Override
     public ResponseResult<List<Order>> getOrdersByCond(int v1, String con) {
         QueryWrapper<Order> select;
         try {
-            select = OrderUtil.getSelect(v1, con);
+            select = OrderUtil.getSelect(v1, con,"");
         } catch (RuntimeException e) {
             logger.error(e.getMessage());
             return null;
