@@ -16,6 +16,10 @@ import java.util.Random;
 public class TimeUtil {
     private static final String TIME_ID="yyyyMMddHHmmss";
 
+    public static Date getNowDate(){
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        return new Date(timestamp.getTime());
+    }
 
     /**
      * 获得想要的指定格式时间

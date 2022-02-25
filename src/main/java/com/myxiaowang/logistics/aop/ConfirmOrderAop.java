@@ -8,6 +8,7 @@ import com.myxiaowang.logistics.dao.*;
 import com.myxiaowang.logistics.pojo.*;
 import com.myxiaowang.logistics.util.RedisUtil.RedisPool;
 import com.myxiaowang.logistics.util.Reslut.ResponseResult;
+import com.myxiaowang.logistics.util.TimeUtil;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
@@ -129,7 +130,7 @@ public class ConfirmOrderAop {
                 jedis.del(args[1].toString());
                 // 修改订单状态
                 order.setStatus(5);
-                order.setOverTime(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
+                order.setOverTime(TimeUtil.getNowDate());
                 orderMapper.updateById(order);
                 // 改回默认值
                 status=2;
