@@ -6,8 +6,8 @@
 
     <resultMap id="orders" type="com.myxiaowang.logistics.pojo.Logistics">
         <id column="id" property="id" />
-        <result column="logisticsid" property="logistics"/>
-        <result column="userid" property="userId" />
+        <result column="logistics_id" property="logistics"/>
+        <result column="user_id" property="userId" />
         <result column="goods" property="goods"/>
         <result column="create_time" property="createTime" />
         <result column="over_time" property="overTime" />
@@ -21,7 +21,7 @@
             <result column="address" property="address" />
             <result column="phone" property="phone" />
             <result column="goods" property="goodsName" />
-            <result column="logisticsid" property="orderId" />
+            <result column="logistics_id" property="orderId" />
         </association>
     </resultMap>
     <select id="getUserLogistics" resultMap="orders">

@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.IllegalTransactionStateException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.interceptor.DefaultTransactionAttribute;
 import redis.clients.jedis.Jedis;
@@ -122,6 +123,7 @@ public class ConfirmOrderAop {
             if(Objects.nonNull(order)){
                 Logistics logistics = logisticsMapper.selectOne(new QueryWrapper<Logistics>().eq("user_id", args[0].toString()).eq("logistics_id", args[1].toString()));
                 logistics.setStatus(status);
+                logistics.setOverTime(new Date());
                 logisticsMapper.updateById(logistics);
                 // 最后删除redis的订单数据
                 jedis.del(args[1].toString());
@@ -129,7 +131,6 @@ public class ConfirmOrderAop {
                 order.setStatus(5);
                 order.setOverTime(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
                 orderMapper.updateById(order);
-                dataSourceTransactionManager.commit(transaction);
                 // 改回默认值
                 status=2;
             }
