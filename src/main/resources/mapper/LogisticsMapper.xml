@@ -25,8 +25,8 @@
         </association>
     </resultMap>
     <select id="getUserLogistics" resultMap="orders">
-        select l1.*,l2.id as oid,l2.username,l2.address,l2.phone from logistics as l1 left join orders as l2 on l1.logisticsid=l2.orderid
-           where  l1.userid=#{userId}
+        select l1.*,l2.id as oid,l2.username,l2.address,l2.phone from logistics as l1 left join orders as l2 on l1.logistics_id=l2.order_id
+           where  l1.user_id=#{userId}
             <if test="0 == type">
                 and l1.status=1
             </if>

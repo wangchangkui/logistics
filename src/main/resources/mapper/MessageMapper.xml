@@ -4,9 +4,9 @@
 
 
     <insert id="insertList">
-        insert into message(userid, content, pic, create_time) VALUES
+        insert into message(user_id, content, pic, create_time,nick_name) VALUES
         <foreach collection="messageList" separator="," item="message" index="index">
-            (#{message.userId},#{message.content},#{message.pic},#{message.createTime})
+            (#{message.userId},#{message.content},#{message.pic},#{message.createTime},#{nickName})
         </foreach>
     </insert>
 

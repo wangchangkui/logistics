@@ -5,6 +5,6 @@
 <mapper namespace="com.myxiaowang.logistics.dao.TxMapper">
 
     <select id="getUserTx" resultType="com.myxiaowang.logistics.pojo.Tx">
-        select * from tb_tx where userid=#{userId}
+        select * from tb_tx where user_id=#{userId}
     </select>
 </mapper>
