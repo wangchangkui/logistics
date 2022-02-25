@@ -79,6 +79,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     @Override
     public ResponseResult<List<Order>> getOrdersByCond(int v1, String con) {
+        // 修复一个接口共用的bug 别问我为什么这么写 因为我懒
+        v1=1;
         QueryWrapper<Order> select;
         try {
             select = OrderUtil.getSelect(v1, con,"");
