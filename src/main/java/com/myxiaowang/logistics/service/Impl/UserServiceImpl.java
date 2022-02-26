@@ -12,6 +12,7 @@ import com.myxiaowang.logistics.dao.AddressMapper;
 import com.myxiaowang.logistics.dao.ArrearsMapper;
 import com.myxiaowang.logistics.dao.UserMapper;
 import com.myxiaowang.logistics.pojo.Address;
+import com.myxiaowang.logistics.pojo.Arrears;
 import com.myxiaowang.logistics.pojo.User;
 import com.myxiaowang.logistics.service.UserService;
 import com.myxiaowang.logistics.util.Annotation.LoginAop;
@@ -27,12 +28,14 @@ import org.apache.commons.codec.digest.Md5Crypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.params.SetParams;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -80,6 +83,39 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private String filePath;
     @Value("${filePath.osspath}")
     private String ossPath;
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ResponseResult<String> overArrea(Integer arreaId) {
+        Arrears userArre = arrearsMapper.getUserArre(arreaId);
+        // 获取被欠费人的信息
+        User arrUser = getOne(new QueryWrapper<User>().eq("user_id", userArre.getArrUserid()));
+        // 如果被欠费的人余额不足
+        if(userArre.getMoney().compareTo(arrUser.getDecimals())>0){
+            return ResponseResult.error("余额不足");
+        }
+        // 用户被欠费的
+        BigDecimal decimals  = arrUser.getDecimals();
+        arrUser.setDecimals(decimals.subtract(userArre.getMoney()));
+        Integer version = arrUser.getVersion();
+        arrUser.setVersion(version+1);
+        update(arrUser,new QueryWrapper<User>().eq("user_id", arrUser.getUserid()).eq("money",decimals).eq("version",version));
+        //我的信息
+        User me = userArre.getMe();
+        BigDecimal decimals1 = me.getDecimals();
+        me.setDecimals(decimals1.add(userArre.getMoney()));
+        Integer version1 = me.getVersion();
+        me.setVersion(version1+1);
+        update(me,new QueryWrapper<User>().eq("user_id", me.getUserid()).eq("money",decimals1).eq("version",version1));
+        // 删除欠费信息
+        arrearsMapper.deleteById(arreaId);
+        return ResponseResult.success("缴费完成");
+    }
+
+    @Override
+    public ResponseResult<List<Map<String, Object>>> getUserArre(String userId) {
+        return ResponseResult.success( userMapper.getUserArre(userId) );
+    }
 
     @Override
     public ResponseResult<List<Map<String, Object>>> getArreInfo(String userId) {

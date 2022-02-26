@@ -15,6 +15,7 @@ import java.util.*;
  */
 @Mapper
 public interface ArrearsMapper extends BaseMapper<Arrears> {
+    Arrears getUserArre(Integer id);
     @MapKey("id")
     List<Map<String,Object>> getArrearsMap(String userId);
 }

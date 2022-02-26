@@ -26,6 +26,17 @@ public class UserController {
     private UserService userService;
 
 
+    @GetMapping("/userArr/{arrId}")
+    public ResponseResult<String> overArrea(@PathVariable Integer arrId){
+        return userService.overArrea(arrId);
+    }
+
+
+    @GetMapping("/arrea/{userId}")
+    public ResponseResult<List<Map<String, Object>>> getUserArrea(@PathVariable String userId){
+        return userService.getUserArre(userId);
+    }
+
     @GetMapping("/arreInfo/{openId}")
     public ResponseResult<List<Map<String, Object>>> getArreInfo(@PathVariable("openId") String openId){
         return userService.getArreInfo(openId);

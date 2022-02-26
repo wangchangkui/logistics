@@ -17,6 +17,21 @@ import java.util.*;
 
 public interface UserService extends IService<User> {
 
+
+    /**
+     * 欠费缴费接口
+     * @param arreaId 欠费id
+     * @return 操作结果
+     */
+    ResponseResult<String> overArrea(Integer arreaId);
+
+    /**
+     * 获取用户的欠费信息
+     * @param userId 用户值
+     * @return map
+     */
+    ResponseResult<List<Map<String, Object>>> getUserArre(String userId);
+
     /**
      * 获取欠费余额原因
      * @param userId 被欠费用户id

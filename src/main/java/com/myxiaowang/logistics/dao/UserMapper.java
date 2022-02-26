@@ -5,6 +5,7 @@ import com.myxiaowang.logistics.pojo.User;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author wck
@@ -14,6 +15,13 @@ import java.util.List;
  */
 @Mapper
 public interface UserMapper extends BaseMapper<User> {
+
+    /**
+     * 获取用户的欠费信息
+     * @param userId 用户id
+     * @return 返回值
+     */
+    List<Map<String,Object>> getUserArre(String userId);
     /**
      * 获取用户数据
      * @param openId openId

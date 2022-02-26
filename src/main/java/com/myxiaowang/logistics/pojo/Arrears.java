@@ -35,4 +35,7 @@ public class Arrears {
     private Date createTime;
     @TableField(value = "arruser_id")
     private String arrUserid;
+
+    @TableField(exist = false)
+    private User me;
 }
