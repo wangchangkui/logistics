@@ -316,6 +316,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 设置密码
         user.setPassword(Md5Crypt.md5Crypt(user.getPassword().getBytes(),"$1$myxiaowang"));
         user.setPhone("");
+        // 设置名称
+        user.setName("");
         int insert = userMapper.insert(user);
         return ResponseResult.success(""+insert);
     }
