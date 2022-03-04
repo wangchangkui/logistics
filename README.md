@@ -11,7 +11,7 @@
 > 更多后期完成后补充 \
 > 小程序后端（myxiaowang）： springboot+Mybatis-plus+redis+docker+rabbitmq+websocket  \
 > 小程序后台（sjd）： springboot+Mybatis-plus+redis+docker  \
-> 前端(myxiaowang)：  微信小程序
+> 前端(myxiaowang)：  微信小程序原生\
 > 后台（sjd）：thymeleaf（为什么不适用vue？ 因为sjd不会.......）
 
 
