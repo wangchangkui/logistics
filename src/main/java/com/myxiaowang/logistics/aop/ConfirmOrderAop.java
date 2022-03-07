@@ -1,11 +1,14 @@
 package com.myxiaowang.logistics.aop;
 
-import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
-import com.myxiaowang.logistics.dao.*;
-import com.myxiaowang.logistics.pojo.*;
+import com.myxiaowang.logistics.dao.LogisticsMapper;
+import com.myxiaowang.logistics.dao.OrderMapper;
+import com.myxiaowang.logistics.dao.UserMapper;
+import com.myxiaowang.logistics.pojo.Logistics;
+import com.myxiaowang.logistics.pojo.Order;
+import com.myxiaowang.logistics.pojo.User;
 import com.myxiaowang.logistics.util.RedisUtil.RedisPool;
 import com.myxiaowang.logistics.util.Reslut.ResponseResult;
 import com.myxiaowang.logistics.util.TimeUtil;
@@ -17,13 +20,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.IllegalTransactionStateException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.interceptor.DefaultTransactionAttribute;
 import redis.clients.jedis.Jedis;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.Objects;
 
