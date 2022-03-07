@@ -35,6 +35,11 @@ public class OrderController {
         return orderService.getOrdersByCond(v1,v2,userId);
     }
 
+    /**
+     * 获取用户的订单
+     * @param userid 用户id
+     * @return 用户订单列表
+     */
     @GetMapping("/getOrderUser/{userid}")
     public ResponseResult<List<Order>> getOrderByUser(@PathVariable String userid){
         return orderService.getOrderByUser(userid);
