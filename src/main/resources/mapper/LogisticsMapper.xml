@@ -31,7 +31,7 @@
                 and l1.status=1
             </if>
             <if test="1 == type">
-                and l1.status=2 or l1.status=3
+                and ( l1.status=2 or l1.status=3 )
             </if>
     </select>
 </mapper>
