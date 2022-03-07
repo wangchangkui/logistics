@@ -253,8 +253,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public ResponseResult<String> updateUser(User user) {
-        userMapper.updateById(user);
-        return ResponseResult.success(ResultInfo.SUCCESS.getMessage());
+        System.out.println(user.getUserid());
+        user.setUpdateTime(new Date());
+        int res = userMapper.update(user, new QueryWrapper<User>().eq("user_id", user.getUserid()));
+        // 修复一个前端设置空值的BUG
+        if(res==1){
+            return ResponseResult.success(ResultInfo.SUCCESS.getMessage());
+        }
+        return ResponseResult.error("更新失败");
     }
 
     @Override
@@ -291,6 +297,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public ResponseResult<User> getUser(String openId) {
+        System.out.println(openId);
         User loginUser=null;
         try (Jedis jedis=redisPool.getConnection()){
             String user = jedis.get("openid");
@@ -319,6 +326,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 设置名称
         user.setName("");
         int insert = userMapper.insert(user);
+        // 注册成功后往redis中存入数据
+        try(Jedis jedis=redisPool.getConnection()){
+            jedis.set(user.getUserid(),JSON.toJSONString(user));
+        }
         return ResponseResult.success(""+insert);
     }
 
