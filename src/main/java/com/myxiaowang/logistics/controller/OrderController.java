@@ -46,6 +46,12 @@ public class OrderController {
     }
 
 
+    /**
+     * 获取用户以及完成的订单
+     * @param userId 用户ID
+     * @param type 订单类型
+     * @return 订单列表
+     */
     @PostMapping("/getUserOrder")
     public ResponseResult<List<Logistics>> getOrderByUser(@RequestParam("userId")String userId, @RequestParam("type")int type){
         return orderService.getOrderByUser(userId,type);
