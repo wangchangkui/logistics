@@ -18,6 +18,7 @@
         <hu-tools>5.7.18</hu-tools>
         <mybatis-plus>3.2.0</mybatis-plus>
         <druid-version>1.1.22</druid-version>
+        <druid-srping-version>1.2.8</druid-srping-version>
         <mysql-version>8.0.23</mysql-version>
         <fastjson-version>1.2.76</fastjson-version>
         <poi-version>3.16</poi-version>
@@ -35,6 +36,14 @@
         <zfb-common>4.22.10.ALL</zfb-common>
     </properties>
     <dependencies>
+
+
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
 
         <dependency>
             <groupId>com.alipay.sdk</groupId>
@@ -210,6 +219,11 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid-spring-boot-starter</artifactId>
+            <version>${druid-srping-version}</version>
         </dependency>
     </dependencies>
 
