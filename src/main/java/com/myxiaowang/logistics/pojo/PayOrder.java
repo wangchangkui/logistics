@@ -31,8 +31,8 @@ public class PayOrder {
     @TableField(value = "username")
     private String userName;
     @TableField(value = "create_time")
-    private Timestamp createTime;
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
+    private Timestamp createTime;
     @TableField(value = "money")
     private BigDecimal money;
     @TableField(value = "phone")
