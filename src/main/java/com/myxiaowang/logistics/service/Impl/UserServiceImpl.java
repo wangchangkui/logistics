@@ -133,13 +133,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public ResponseResult<User> passWordLogin(String username, String password) {
         password = DigestUtils.md5Hex(password.getBytes(StandardCharsets.UTF_8));
         User one = getOne(new QueryWrapper<User>().eq("username", username).eq("password", password));
-        if(ObjectUtils.isNull(one)){
-            return ResponseResult.error(ResultInfo.NO_RESULT);
-        }
-        try(Jedis jedis=redisPool.getConnection()){
-            jedis.lpush("userList",JSON.toJSONString(one));
-        }
-       return ResponseResult.success(one);
+        return getUser(one.getUserid());
     }
 
     @Override
@@ -253,7 +247,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public ResponseResult<String> updateUser(User user) {
-        System.out.println(user.getUserid());
         user.setUpdateTime(new Date());
         int res = userMapper.update(user, new QueryWrapper<User>().eq("user_id", user.getUserid()));
         // 修复一个前端设置空值的BUG
@@ -278,6 +271,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public ResponseResult<User> checkSms(String phone, String sms) {
         User user=getOne(new QueryWrapper<User>().eq("phone", phone));
+        ResponseResult<User> loginUser = getUser(user.getUserid());
+        user = loginUser.getData();
         if(Objects.isNull(user)){
             return ResponseResult.error("用户不存在");
         }
@@ -297,7 +292,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public ResponseResult<User> getUser(String openId) {
-        System.out.println(openId);
         User loginUser=null;
         try (Jedis jedis=redisPool.getConnection()){
             String user = jedis.get("openid");
