@@ -133,6 +133,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public ResponseResult<User> passWordLogin(String username, String password) {
         password = DigestUtils.md5Hex(password.getBytes(StandardCharsets.UTF_8));
         User one = getOne(new QueryWrapper<User>().eq("username", username).eq("password", password));
+        if(one == null){
+            return null;
+        }
+        // 我太懒了 不想去了 等他再去处理一次mysql吧
         return getUser(one.getUserid());
     }
 
