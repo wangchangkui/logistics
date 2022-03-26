@@ -141,7 +141,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             user2.setVersion(version2 + 1);
             // 更新数据
             int update1 = userMapper.update(user, new QueryWrapper<User>().eq("user_id", user.getUserid()).eq("money", bigDecimal).eq("version", version));
-            int update2 = userMapper.update(user2, new QueryWrapper<User>().eq("user_id", user2.getUserid()).eq("money", bigDecimal2).eq("version", version));
+            int update2 = userMapper.update(user2, new QueryWrapper<User>().eq("user_id", user2.getUserid()).eq("money", bigDecimal2).eq("version", version2));
             // 需要保证2条数据能正常返回
             if (update1 < 1 || update2 < 1) {
                 throw new RuntimeException("数据不正确");
