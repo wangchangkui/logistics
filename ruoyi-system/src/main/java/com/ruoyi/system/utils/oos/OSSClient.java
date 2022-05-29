@@ -108,6 +108,7 @@ public class OSSClient implements AutoCloseable {
      * @param filePath   文件地址
      */
     public void muiltFileUpload(String BucketName, String ObjectName, String filePath) {
+
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentType("text/plain");
         UploadFileRequest uploadFileRequest = new UploadFileRequest(BucketName, ObjectName);
