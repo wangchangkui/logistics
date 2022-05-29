@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.OrdersMapper">
+    
+    <resultMap type="Orders" id="OrdersResult">
+        <result property="id"    column="id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="goodsName"    column="goods_name"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="status"    column="status"    />
+        <result property="money"    column="money"    />
+        <result property="orderId"    column="order_id"    />
+        <result property="version"    column="version"    />
+        <result property="phone"    column="phone"    />
+        <result property="address"    column="address"    />
+        <result property="overTime"    column="over_time"    />
+        <result property="code"    column="code"    />
+        <result property="userName"    column="user_name"    />
+        <result property="goodsAddress"    column="goods_address"    />
+    </resultMap>
+
+    <sql id="selectOrdersVo">
+        select id, user_id, goods_name, create_time, status, money, order_id, version, phone, address, over_time, code, user_name, goods_address from orders
+    </sql>
+
+    <select id="selectOrdersList" parameterType="Orders" resultMap="OrdersResult">
+        <include refid="selectOrdersVo"/>
+        <where>  
+            <if test="goodsName != null  and goodsName != ''"> and goods_name like concat('%', #{goodsName}, '%')</if>
+            <if test="status != null "> and status = #{status}</if>
+            <if test="money != null "> and money = #{money}</if>
+            <if test="orderId != null  and orderId != ''"> and order_id = #{orderId}</if>
+            <if test="version != null "> and version = #{version}</if>
+            <if test="phone != null  and phone != ''"> and phone = #{phone}</if>
+            <if test="address != null  and address != ''"> and address = #{address}</if>
+            <if test="overTime != null "> and over_time = #{overTime}</if>
+            <if test="code != null  and code != ''"> and code = #{code}</if>
+            <if test="userName != null  and userName != ''"> and user_name like concat('%', #{userName}, '%')</if>
+            <if test="goodsAddress != null  and goodsAddress != ''"> and goods_address = #{goodsAddress}</if>
+        </where>
+    </select>
+
+    <select id="selectOrdersListByCreateTime" resultMap="OrdersResult">
+        <include refid="selectOrdersVo"/>
+        <where>
+            create_time > #{timestamp}
+        </where>
+    </select>
+
+
+    
+    <select id="selectOrdersById" parameterType="Long" resultMap="OrdersResult">
+        <include refid="selectOrdersVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertOrders" parameterType="Orders" useGeneratedKeys="true" keyProperty="id">
+        insert into orders
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="goodsName != null and goodsName != ''">goods_name,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="status != null">status,</if>
+            <if test="money != null">money,</if>
+            <if test="orderId != null and orderId != ''">order_id,</if>
+            <if test="version != null">version,</if>
+            <if test="phone != null and phone != ''">phone,</if>
+            <if test="address != null and address != ''">address,</if>
+            <if test="overTime != null">over_time,</if>
+            <if test="code != null and code != ''">code,</if>
+            <if test="userName != null and userName != ''">user_name,</if>
+            <if test="goodsAddress != null">goods_address,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="goodsName != null and goodsName != ''">#{goodsName},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="status != null">#{status},</if>
+            <if test="money != null">#{money},</if>
+            <if test="orderId != null and orderId != ''">#{orderId},</if>
+            <if test="version != null">#{version},</if>
+            <if test="phone != null and phone != ''">#{phone},</if>
+            <if test="address != null and address != ''">#{address},</if>
+            <if test="overTime != null">#{overTime},</if>
+            <if test="code != null and code != ''">#{code},</if>
+            <if test="userName != null and userName != ''">#{userName},</if>
+            <if test="goodsAddress != null">#{goodsAddress},</if>
+         </trim>
+    </insert>
+
+    <update id="updateOrders" parameterType="Orders">
+        update orders
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="goodsName != null and goodsName != ''">goods_name = #{goodsName},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="money != null">money = #{money},</if>
+            <if test="orderId != null and orderId != ''">order_id = #{orderId},</if>
+            <if test="version != null">version = #{version},</if>
+            <if test="phone != null and phone != ''">phone = #{phone},</if>
+            <if test="address != null and address != ''">address = #{address},</if>
+            <if test="overTime != null">over_time = #{overTime},</if>
+            <if test="code != null and code != ''">code = #{code},</if>
+            <if test="userName != null and userName != ''">user_name = #{userName},</if>
+            <if test="goodsAddress != null">goods_address = #{goodsAddress},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteOrdersById" parameterType="Long">
+        delete from orders where id = #{id}
+    </delete>
+
+    <delete id="deleteOrdersByIds" parameterType="String">
+        delete from orders where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>
