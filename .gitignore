@@ -44,3 +44,17 @@ nbdist/
 !*/build/*.java
 !*/build/*.html
 !*/build/*.xml
+target/
+target/**
+**/target/
+**/target/**
+**.yml
+**.yaml
+**.properties
+**.gradle
+**.gradle.kts
+**.gradle.bat
+**.gradle.sh
+**.gradle.zip
+**.gradle.tar.gz
+**.gradle.tar.bz2
