@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.WithdrawMapper">
+    
+    <resultMap type="Withdraw" id="WithdrawResult">
+        <result property="id"    column="id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="money"    column="money"    />
+        <result property="alipay"    column="alipay"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="status"    column="status"    />
+    </resultMap>
+
+    <sql id="selectWithdrawVo">
+        select id, user_id, money, alipay, create_time, status from wx_tx
+    </sql>
+
+    <select id="selectWithdrawList" parameterType="Withdraw" resultMap="WithdrawResult">
+        <include refid="selectWithdrawVo"/>
+        <where>  
+            <if test="userId != null  and userId != ''"> and user_id = #{userId}</if>
+            <if test="money != null "> and money = #{money}</if>
+            <if test="alipay != null  and alipay != ''"> and alipay = #{alipay}</if>
+            <if test="createTime != null "> and create_time = #{createTime}</if>
+            <if test="status != null "> and status = #{status}</if>
+        </where>
+    </select>
+    
+    <select id="selectWithdrawById" parameterType="Long" resultMap="WithdrawResult">
+        <include refid="selectWithdrawVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertWithdraw" parameterType="Withdraw" useGeneratedKeys="true" keyProperty="id">
+        insert into wx_tx
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null and userId != ''">user_id,</if>
+            <if test="money != null">money,</if>
+            <if test="alipay != null and alipay != ''">alipay,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="status != null">status,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null and userId != ''">#{userId},</if>
+            <if test="money != null">#{money},</if>
+            <if test="alipay != null and alipay != ''">#{alipay},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="status != null">#{status},</if>
+         </trim>
+    </insert>
+
+    <update id="updateWithdraw" parameterType="Withdraw">
+        update wx_tx
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null and userId != ''">user_id = #{userId},</if>
+            <if test="money != null">money = #{money},</if>
+            <if test="alipay != null and alipay != ''">alipay = #{alipay},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="status != null">status = #{status},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteWithdrawById" parameterType="Long">
+        delete from wx_tx where id = #{id}
+    </delete>
+
+    <delete id="deleteWithdrawByIds" parameterType="String">
+        delete from wx_tx where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

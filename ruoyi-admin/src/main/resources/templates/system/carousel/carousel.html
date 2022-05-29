@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('轮播图列表')" />
+</head>
+<body class="gray-bg">
+     <div class="container-div">
+        <div class="row">
+            <div class="col-sm-12 search-collapse">
+                <form id="formId">
+                    <div class="select-list">
+                        <ul>
+                            <li>
+                                <label>是否展示：</label>
+                                <select name="show" th:with="type=${@dict.getType('wx_lbt_status')}">
+                                    <option value="">所有</option>
+                                    <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                                </select>
+                            </li>
+                            <li>
+                                <label>标题：</label>
+                                <input type="text" name="title"/>
+                            </li>
+                            <li>
+                                <label>跳转地址：</label>
+                                <input type="text" name="url"/>
+                            </li>
+                            <li>
+                                <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                                <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+                            </li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+
+            <div class="btn-group-sm" id="toolbar" role="group">
+                <a class="btn btn-success" onclick="$.operate.add()" shiro:hasPermission="system:carousel:add">
+                    <i class="fa fa-plus"></i> 添加
+                </a>
+            </div>
+            <div class="col-sm-12 select-table table-striped">
+                <table id="bootstrap-table"></table>
+            </div>
+        </div>
+    </div>
+    <th:block th:include="include :: footer" />
+    <script th:inline="javascript">
+        var editFlag = [[${@permission.hasPermi('system:carousel:edit')}]];
+        var removeFlag = [[${@permission.hasPermi('system:carousel:remove')}]];
+        var showDatas = [[${@dict.getType('wx_lbt_status')}]];
+        var prefix = ctx + "system/carousel";
+
+        $(function() {
+            var options = {
+                url: prefix + "/list",
+                createUrl: prefix + "/add",
+                updateUrl: prefix + "/edit/{id}",
+                removeUrl: prefix + "/remove",
+                exportUrl: prefix + "/export",
+                modalName: "轮播图",
+                columns: [
+                {
+                    field: 'id',
+                    title: 'ID 主键',
+                    visible: false
+                },
+                {
+                    field: 'title',
+                    title: '标题'
+                },
+                {
+                    field: 'headerUrl',
+                    title: '图片',
+                    formatter: function(value, row, index) {
+                        // 图片预览（注意：如存储在本地直接获取数据库路径，如有配置context-path需要使用ctx+路径）
+                        // 如：/profile/upload/2019/08/08/3b7a839aced67397bac694d77611ce72.png
+                        if(index % 2 == 0){
+                            return $.table.imageView(value);
+                        }else {
+                            return $.table.imageView(value);
+                        }
+                    }
+                },
+                {
+                    field: 'show',
+                    title: '是否展示',
+                    formatter: function(value, row, index) {
+                       return $.table.selectDictLabel(showDatas, value);
+                    }
+                },
+                {
+                    field: 'url',
+                    title: '跳转地址'
+                },
+                {
+                    title: '操作',
+                    align: 'center',
+                    formatter: function(value, row, index) {
+                        var actions = [];
+                        actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="$.operate.edit(\'' + row.id + '\')"><i class="fa fa-edit"></i>编辑</a> ');
+                        actions.push('<a class="btn btn-danger btn-xs ' + removeFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.id + '\')"><i class="fa fa-remove"></i>删除</a>');
+                        return actions.join('');
+                    }
+                }]
+            };
+            $.table.init(options);
+        });
+    </script>
+</body>
+</html>

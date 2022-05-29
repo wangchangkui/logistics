@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('提现管理列表')" />
+</head>
+<body class="gray-bg">
+     <div class="container-div">
+        <div class="row">
+            <div class="col-sm-12 search-collapse">
+                <form id="formId">
+                    <div class="select-list">
+                        <ul>
+                            <li>
+                                <label>用户Id：</label>
+                                <input type="text" name="userId"/>
+                            </li>
+                            <li>
+                                <label>金额：</label>
+                                <input type="text" name="money"/>
+                            </li>
+                            <li>
+                                <label>提现账号：</label>
+                                <input type="text" name="alipay"/>
+                            </li>
+                            <li>
+                                <label>提现时间：</label>
+                                <input type="text" class="time-input" placeholder="请选择提现时间" name="createTime"/>
+                            </li>
+                            <li>
+                                <label>提现状态：</label>
+                                <select name="status" th:with="type=${@dict.getType('wx_tx_status')}">
+                                    <option value="">所有</option>
+                                    <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                                </select>
+                            </li>
+                            <li>
+                                <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                                <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+                            </li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+
+            <div class="btn-group-sm" id="toolbar" role="group">
+                <a class="btn btn-warning" onclick="$.table.exportExcel()" shiro:hasPermission="system:tx:export">
+                    <i class="fa fa-download"></i> 全部导出
+                </a>
+            </div>
+            <div class="col-sm-12 select-table table-striped">
+                <table id="bootstrap-table"></table>
+            </div>
+        </div>
+    </div>
+    <th:block th:include="include :: footer" />
+    <script th:inline="javascript">
+        var editFlag = [[${@permission.hasPermi('system:tx:edit')}]];
+        var removeFlag = [[${@permission.hasPermi('system:tx:remove')}]];
+        var refuseFlag = [[${@permission.hasPermi('system:tx:refuse')}]];
+        var agreeFlag = [[${@permission.hasPermi('system:tx:agree')}]];
+        var statusDatas = [[${@dict.getType('wx_tx_status')}]];
+        var prefix = ctx + "system/tx";
+
+        $(function() {
+            var options = {
+                url: prefix + "/list",
+                createUrl: prefix + "/add",
+                updateUrl: prefix + "/edit/{id}",
+                refuseUrl: prefix + "/refuse/{id}",
+                agreeUrl: prefix + "/agree/{id}",
+                exportUrl: prefix + "/export",
+                modalName: "提现管理",
+                columns: [{
+                    checkbox: true
+                },
+                {
+                    field: 'id',
+                    title: '',
+                    visible: false
+                },
+                {
+                    field: 'userId',
+                    title: '提现用户Id'
+                },
+                {
+                    field: 'money',
+                    title: '提现金额'
+                },
+                {
+                    field: 'alipay',
+                    title: '支付宝账号'
+                },
+                {
+                    field: 'status',
+                    title: '提现状态',
+                    formatter: function(value, row, index) {
+                       return $.table.selectDictLabel(statusDatas, value);
+                    }
+                },
+                {
+                    title: '操作',
+                    align: 'center',
+                    formatter: function(value, row, index) {
+                        var actions = [];
+                        if(row.status === 2){
+                            actions.push('<a class="btn btn-info btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="$.operate.edit(\'' + row.id + '\')"><i class="fa fa-remove"></i>修改</a> &nbsp;');
+                            actions.push('<a class="btn btn-success btn-xs ' + agreeFlag + '" href="javascript:void(0)" onclick="$.operate.agree(\'' + row.id + '\')"><i class="fa fa-edit"></i>同意</a> ');
+                            actions.push('<a class="btn btn-danger btn-xs ' + refuseFlag + '" href="javascript:void(0)" onclick="$.operate.refuse(\'' + row.id + '\')"><i class="fa fa-remove"></i>拒绝</a>');
+                        }
+                        return actions.join('');
+                    }
+                }]
+            };
+            $.table.init(options);
+        });
+    </script>
+</body>
+</html>

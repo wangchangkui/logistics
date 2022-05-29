@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<head>
+    <th:block th:include="include :: header('缓存监控')" />
+</head>
+<body  class="gray-bg">
+        <div class="col-lg-12" style="padding-top: 20px">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="ibox float-e-margins">
+                        <div class="ibox-title">
+                            <h5>基本信息</h5>
+<!--                            <div class="ibox-tools">-->
+<!--                                <a class="collapse-link"><i class="fa fa-chevron-up"></i>-->
+<!--                                </a>-->
+<!--                                <a class="close-link"><i class="fa fa-times"></i></a>-->
+<!--                            </div>-->
+                        </div>
+                        <div class="ibox-content">
+                            <table class="table table-hover no-margins">
+                                <tbody>
+                                <tr>
+                                    <th ><div>Redis版本</div></th>
+                                    <td ><div th:text="${info.redis_version}">Redis 版本信息</div></td>
+                                    <th><div>运行模式</div></th>
+                                    <td ><div th:if="${info.redis_mode} eq 'standalone'"> 单机 </div><div th:if="${info.redis_mode} ne 'standalone'">集群 </div></td>
+                                </tr>
+                                <tr>
+                                    <th ><div>端口</div></th>
+                                    <td ><div th:text="${info.tcp_port}">6379</div></td>
+                                    <th ><div>客户端数</div></th>
+                                    <td><div th:text="${info.connected_clients}"> 1 个</div></td>
+                                </tr>
+                                <tr>
+                                    <th><div>运行时间(天)</div></th>
+                                    <td ><div th:text="${info.uptime_in_days}">1 天</div></td>
+                                    <th ><div>系统内存</div></th>
+                                    <td><div th:text="${info.total_system_memory}"> 0 MB</div></td>
+                                </tr>
+                                <tr>
+                                    <th><div>使用CPU</div></th>
+                                    <td><div th:text="${info.used_cpu_sys_children}"> 0 % </div></td>
+                                    <th><div>内存消耗峰值</div></th>
+                                    <td><div th:text="${info.used_memory_peak}">0 MB</div></td>
+                                </tr>
+                                <tr>
+                                    <th><div>AOF是否开启</div></th>
+                                    <td><div th:if="${info.aof_enabled} eq 0">是</div><div th:if="${info.aof_enabled} ne 0">否</div></td>
+                                    <th><div>RDB是否成功</div></th>
+                                    <td><div th:if="${info.rdb_last_bgsave_status} eq 'ok'">是</div><div th:if="${info.rdb_last_bgsave_status} ne 'ok'">否</div></td>
+                                </tr>
+                                <tr>
+                                    <th><div>Key数量</div></th>
+                                    <td><div th:text="${dbSize}">{{ cache. }} </div></td>
+                                    <th><div >网络入口/出口</div></th>
+                                    <td><span th:text="${info.instantaneous_input_kbps}">0</span>kbs/<span th:text="${info.instantaneous_output_kbps}">0</span>kbs</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-12">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="ibox float-e-margins">
+                        <div class="ibox-title">
+                            <h5>命令统计</h5>
+<!--                            <div class="ibox-tools">-->
+<!--                                <a class="collapse-link"><i class="fa fa-chevron-up"></i>-->
+<!--                                </a>-->
+<!--                                <a class="close-link"><i class="fa fa-times"></i></a>-->
+<!--                            </div>-->
+                        </div>
+                        <div class="ibox-content">
+                            <div id="commonTotal" style="height: 420px"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="ibox float-e-margins">
+                        <div class="ibox-title">
+                            <h5>内存信息</h5>
+                            <div class="ibox-tools">
+<!--                                <a class="collapse-link"><i class="fa fa-chevron-up"></i>-->
+<!--                                </a>-->
+<!--                                <a class="close-link"><i class="fa fa-times"></i></a>-->
+<!--                            </div>-->
+                        </div>
+                        <div class="ibox-content">
+                            <div id="usedMemory" style="height: 420px"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<script th:src="@{/js/jquery.min.js}"></script>
+<script th:src="@{/js/bootstrap.min.js}"></script>
+<script th:src="@{/ajax/libs/flot/jquery.flot.js}"></script>
+<script src="../static/js/echarts/echarts.min.js" th:src="@{/js/echarts/echarts.min.js}"></script>
+
+<th:block th:include="include :: sparkline-js" />
+<script type="text/javascript">
+    $(document).ready(function () {
+        // 统计命令信息
+        const that = {
+            commandstats: null,
+            // 使用内存
+            usedmemory: null,
+            // cache信息
+            cache: [],
+        };
+        // this.$modal.loading("正在加载缓存监控数据，请稍候！");
+        const that1 = this;
+        $.get("/monitor/cache/redis", function (data) {
+            if (data.code !== 0) {
+                alert(data.msg);
+                return;
+            }
+            that.cache = data.data;
+            // that1.$modal.closeLoading();
+            that.usedmemory = echarts.init(document.getElementById('commonTotal'));
+            // that.commandstats = echarts.init(this.$refs.commandstats, "macarons");
+            const optionCommand = {
+                tooltip: {
+                    trigger: "item",
+                    formatter: "{a} <br/>{b} : {c} ({d}%)",
+                },
+                series: [
+                    {
+                        name: "命令",
+                        type: "pie",
+                        roseType: "radius",
+                        radius: [15, 95],
+                        center: ["50%", "38%"],
+                        data: data.data.commandStats,
+                        animationEasing: "cubicInOut",
+                        animationDuration: 1000,
+                    },
+                ],
+            };
+            that.usedmemory.setOption(optionCommand);
+            that.usedmemory = echarts.init(document.getElementById('usedMemory'));
+            const optionMemory = ({
+                tooltip: {
+                    formatter: "{b} <br/>{a} : " + that.cache.info.used_memory_human,
+                },
+                series: [
+                    {
+                        name: "峰值",
+                        type: "gauge",
+                        min: 0,
+                        max: parseFloat(that.cache.info.used_memory_rss),
+                        detail: {
+                            formatter: that.cache.info.used_memory,
+                        },
+                        data: [
+                            {
+                                value: parseFloat(that.cache.info.used_memory),
+                                name: "内存消耗",
+                            },
+                        ],
+                    },
+                ],
+            });
+            that.usedmemory.setOption(optionMemory);
+        });
+    });
+</script>
+
+<script>
+    import { getCache } from "@/api/monitor/cache";
+    import echarts from "echarts";
+
+    export default {
+        name: "Server",
+        data() {
+            return {
+                // 统计命令信息
+                commandstats: null,
+                // 使用内存
+                usedmemory: null,
+                // cache信息
+                cache: [],
+            };
+        },
+        created() {
+            this.getList();
+            this.openLoading();
+        },
+        methods: {
+            /** 查缓存询信息 */
+            getList() {
+                getCache().then((response) => {
+                    this.cache = response.data;
+                    this.$modal.closeLoading();
+
+                    this.commandstats = echarts.init(this.$refs.commandstats, "macarons");
+                    this.commandstats.setOption({
+                        tooltip: {
+                            trigger: "item",
+                            formatter: "{a} <br/>{b} : {c} ({d}%)",
+                        },
+                        series: [
+                            {
+                                name: "命令",
+                                type: "pie",
+                                roseType: "radius",
+                                radius: [15, 95],
+                                center: ["50%", "38%"],
+                                data: response.data.commandStats,
+                                animationEasing: "cubicInOut",
+                                animationDuration: 1000,
+                            },
+                        ],
+                    });
+                    this.usedmemory = echarts.init(this.$refs.usedmemory, "macarons");
+                    this.usedmemory.setOption({
+                        tooltip: {
+                            formatter: "{b} <br/>{a} : " + this.cache.info.used_memory_human,
+                        },
+                        series: [
+                            {
+                                name: "峰值",
+                                type: "gauge",
+                                min: 0,
+                                max: 1000,
+                                detail: {
+                                    formatter: this.cache.info.used_memory_human,
+                                },
+                                data: [
+                                    {
+                                        value: parseFloat(this.cache.info.used_memory_human),
+                                        name: "内存消耗",
+                                    },
+                                ],
+                            },
+                        ],
+                    });
+                });
+            },
+            // 打开加载层
+            openLoading() {
+                this.$modal.loading("正在加载缓存监控数据，请稍候！");
+            },
+        },
+    };
+</script>
+
+
+</body>
+</html>
